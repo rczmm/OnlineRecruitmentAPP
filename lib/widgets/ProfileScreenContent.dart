@@ -5,6 +5,7 @@ import '../ResumePage.dart';
 import '../screens/PersonalityTestScreen.dart';
 import '../screens/QuizScreen.dart';
 import '../screens/RecruitmentFair.dart';
+import '../screens/application_history_screen.dart';
 import 'StatusCounter.dart';
 
 
@@ -33,11 +34,31 @@ class ProfileScreenContent extends StatelessWidget {
           // 状态统计
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
-              StatusCounter(label: '已提交', count: 12),
-              StatusCounter(label: '待提交', count: 5),
-              StatusCounter(label: '未通过', count: 2),
-              StatusCounter(label: '已通过', count: 8),
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ApplicationHistoryScreen(initialTabIndex: 1),
+                    ),
+                  );
+                },
+                child: const StatusCounter(label: '沟通过', count: 12),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ApplicationHistoryScreen(initialTabIndex: 0),
+                    ),
+                  );
+                },
+                child: const StatusCounter(label: '已投递', count: 5),
+              ),
+              const StatusCounter(label: '待面试', count: 2),
+              const StatusCounter(label: '收藏', count: 8),
             ],
           ),
           const SizedBox(height: 20),

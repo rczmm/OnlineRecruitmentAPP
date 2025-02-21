@@ -61,10 +61,59 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                 title: const Text("常用语设置"),
                 onTap: () {
                   Navigator.pop(context); // Close bottom sheet first
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CommonPhrasesPage()),
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('常用语设置'),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                title: const Text('您好！'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              ListTile(
+                                title: const Text('很高兴认识您'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  // TODO: 处理常用语选择
+                                },
+                              ),
+                              ListTile(
+                                title: const Text('期待与您合作'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  // TODO: 处理常用语选择
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('关闭'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CommonPhrasesPage(),
+                                ),
+                              );
+                            },
+                            child: const Text('更多设置'),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),

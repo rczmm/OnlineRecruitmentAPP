@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
+import '../ChatScreen.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;
@@ -102,7 +103,7 @@ class JobDetailScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(
                   '1. 负责公司产品的开发和维护；\n'
-                  '2. 参与产品的技术方案设计和实现；\n'
+                  '2. 参与产品技术方案的设计和实现；\n'
                   '3. 编写高质量的代码和技术文档；\n'
                   '4. 解决开发过程中的技术难题；\n'
                   '5. 参与code review，提升团队代码质量。',
@@ -156,20 +157,13 @@ class JobDetailScreen extends StatelessWidget {
                   ),
                   title: Text(job.hrName),
                   subtitle: const Text('在线'),
-                  trailing: ElevatedButton.icon(
-                    icon: const Icon(Icons.message),
-                    label: const Text('聊天'),
-                    onPressed: () {
-                      // TODO: 实现聊天功能
-                    },
-                  ),
                 ),
                 // 底部留白，防止被按钮遮挡
                 const SizedBox(height: 80),
               ],
             ),
           ),
-          // 底部固定的投递按钮
+          // 底部固定的沟通按钮
           Positioned(
             left: 0,
             right: 0,
@@ -187,14 +181,20 @@ class JobDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: 实现投递简历功能
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(peerName: job.hrName),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 45),
                 ),
-                child: const Text('投递简历'),
+                icon: const Icon(Icons.message),
+                label: const Text('立即沟通'),
               ),
             ),
           ),

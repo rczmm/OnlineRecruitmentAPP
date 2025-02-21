@@ -192,13 +192,21 @@ class _HomeScreenContentState extends State<HomeScreenContent>
       final selectedTags = (tagPool.toList()..shuffle()).take(3).toList();
 
       return Job(
+        id: 'job_${index + 1}',
         title: title,
         salary: salaries[index],
         company: company['name']!,
         companySize: company['size']!,
         tags: selectedTags,
         hrName: hrNames[index],
-        location: locations[index]
+        location: locations[index],
+        workExperience: '3-5年',
+        education: '本科及以上',
+        benefits: ['五险一金', '年终奖', '带薪年假', '加班补助'],
+        description: '负责公司核心业务系统的开发和维护工作',
+        requirements: ['本科及以上学历', '3年以上相关工作经验', '良好的团队协作能力'],
+        status: '未投递',
+        date: DateTime.now().toString().substring(0, 10)
       );
     });
   }

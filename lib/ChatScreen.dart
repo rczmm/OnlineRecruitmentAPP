@@ -72,17 +72,134 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(hintText: '输入消息...'),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.attach_file),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('选择附件简历'),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.description),
+                                      title: const Text('我的简历.pdf'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        setState(() {
+                                          _messages.add(ChatMessage(
+                                            sender: '我',
+                                            text: '[附件简历] 我的简历.pdf',
+                                            isMe: true,
+                                          ));
+                                        });
+                                        _channel.sink.add('[附件简历] 我的简历.pdf');
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.description),
+                                      title: const Text('英文简历.pdf'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        setState(() {
+                                          _messages.add(ChatMessage(
+                                            sender: '我',
+                                            text: '[附件简历] 英文简历.pdf',
+                                            isMe: true,
+                                          ));
+                                        });
+                                        _channel.sink.add('[附件简历] 英文简历.pdf');
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('取消'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: const InputDecoration(hintText: '输入消息...'),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.message),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('选择常用语'),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.message),
+                                      title: const Text('您好，我对这个职位很感兴趣'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _controller.text = '您好，我对这个职位很感兴趣';
+                                        _sendMessage();
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.message),
+                                      title: const Text('请问什么时候可以面试？'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _controller.text = '请问什么时候可以面试？';
+                                        _sendMessage();
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.message),
+                                      title: const Text('好的，谢谢您'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _controller.text = '好的，谢谢您';
+                                        _sendMessage();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('取消'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: _sendMessage,
+                    ),
+                  ],
                 ),
               ],
             ),
