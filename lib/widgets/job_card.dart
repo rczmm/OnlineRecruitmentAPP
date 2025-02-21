@@ -4,14 +4,15 @@ import '../screens/job_detail_screen.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
-
-  const JobCard({super.key, required this.job});
-
+  final VoidCallback? onTap;
+  final bool showInterviewTime;
+  final String? interviewTime;
+  const JobCard({super.key, required this.job, this.onTap, this.showInterviewTime = false, this.interviewTime});
   @override
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: () {
+        onTap: onTap ?? () {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -48,6 +49,10 @@ class JobCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text('地点：${job.location}'),
+              if (showInterviewTime && interviewTime != null) ...[  // 只在需要显示面试时间且有面试时间时显示
+                const SizedBox(height: 8),
+                Text('面试时间：$interviewTime', style: const TextStyle(color: Colors.blue)),
+              ],
             ],
           ),
         ),
@@ -58,9 +63,7 @@ class JobCard extends StatelessWidget {
 
 class JobList extends StatelessWidget {
   final List<Job> jobs;
-
   const JobList({super.key, required this.jobs});
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(

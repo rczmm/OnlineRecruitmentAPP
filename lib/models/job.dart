@@ -15,6 +15,7 @@ class Job {
   final List<String> requirements;
   final String status;
   final String date;
+  final DateTime? interviewTime;
 
   Job({
     required this.id,
@@ -33,5 +34,6 @@ class Job {
     required this.requirements,
     required this.status,
     required this.date,
+    this.interviewTime,
   });
 }
