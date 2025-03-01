@@ -75,27 +75,53 @@ class _HomeScreenContentState extends State<HomeScreenContent>
     _subTabController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TabBar(
-          controller: _mainTabController,
-          isScrollable: true, // 允许滚动
-          tabs: _keywords.map((keyword) => Tab(text: keyword)).toList(),
-          onTap: (index) {
-            // 当主 Tab 切换时，重置子 Tab 到第一个
-            _subTabController.index = 0;
-          },
-        ),
-        TabBar(
-          controller: _subTabController,
-          tabs: const [
-            Tab(text: '推荐'),
-            Tab(text: '附近'),
-            Tab(text: '最新'),
-          ],
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              TabBar(
+                controller: _mainTabController,
+                isScrollable: true,
+                labelColor: Colors.blue,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.blue,
+                indicatorWeight: 3,
+                tabs: _keywords.map((keyword) => Tab(
+                  text: keyword,
+                  height: 44,
+                )).toList(),
+                onTap: (index) {
+                  _subTabController.index = 0;
+                },
+              ),
+              TabBar(
+                controller: _subTabController,
+                labelColor: Colors.blue,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.blue,
+                indicatorWeight: 3,
+                tabs: const [
+                  Tab(text: '推荐', height: 40),
+                  Tab(text: '附近', height: 40),
+                  Tab(text: '最新', height: 40),
+                ],
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: TabBarView(
@@ -113,7 +139,6 @@ class _HomeScreenContentState extends State<HomeScreenContent>
       ],
     );
   }
-
   // 生成示例数据
   List<Job> _generateSampleJobs() {
     final titles = [

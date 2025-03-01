@@ -49,7 +49,7 @@ class JobDetailScreen extends StatelessWidget {
                       job.salary,
                       style: const TextStyle(
                         fontSize: 20,
-                        color: Colors.red,
+                        color: Colors.blue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -58,27 +58,42 @@ class JobDetailScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // 公司信息
-                Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 25,
-                      child: Icon(Icons.business, size: 30),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          job.company,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        child: const Icon(Icons.business, size: 30, color: Colors.blue),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.company,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        Text(job.companySize),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 4),
+                          Text(
+                            job.companySize,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -87,14 +102,22 @@ class JobDetailScreen extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: job.tags
-                      .map((tag) => Chip(
-                            label: Text(tag),
-                            backgroundColor: Colors.blue.shade50,
+                      .map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.blue.shade100),
+                            ),
+                            child: Text(
+                              tag,
+                              style: TextStyle(color: Colors.blue.shade700),
+                            ),
                           ))
                       .toList(),
                 ),
                 const SizedBox(height: 24),
-
+                const SizedBox(height: 24),
                 // 职位描述
                 const Text(
                   '职位描述',
