@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/ProfileScreenContent.dart';
+import 'SplashScreen.dart';
 import 'chat_screen.dart';
 import 'home_screen.dart';
+import 'HomeScreenContent.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -90,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage>
             child: Container(
               color: Theme.of(context).primaryColor,
               child: const Center(
-                child: FlutterLogo(size: 100), // 你可以替换成你的 Logo 或其他 Widget
+                child: SplashScreen(), // 你可以替换成你的 Logo 或其他 Widget
               ),
             ),
           ),

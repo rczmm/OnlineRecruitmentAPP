@@ -4,37 +4,83 @@ import 'package:zhaopingapp/services/dio_client.dart';
 
 import '../models/job.dart';
 import '../widgets/job_card.dart';
+import 'search_screen.dart';
 
-class HomeScreenContent extends StatefulWidget {
-  const HomeScreenContent({super.key});
+class JobList extends StatefulWidget {
+  final List<Job> Function() onLoadMore;
+
+  const JobList({super.key, required this.onLoadMore});
 
   @override
-  State<HomeScreenContent> createState() => _HomeScreenContentState();
+  State<JobList> createState() => _JobListState();
 }
 
-class _HomeScreenContentState extends State<HomeScreenContent>
-    with TickerProviderStateMixin {
-  late TabController _mainTabController;
-  late TabController _subTabController;
-
-  List<String> _keywords = []; // 动态关键词列表
-  bool _isLoading = true;
+class _JobListState extends State<JobList> with TickerProviderStateMixin {
+  final TextEditingController _searchController = TextEditingController();
+  List<String> _keywords = [
+    '技术开发',
+    '产品运营',
+    '设计创意',
+    '市场营销',
+    '人力资源',
+    '金融财务',
+    '教育培训',
+    '医疗健康'
+  ];
   String _errorMessage = '';
-
+  String _currentMainTab = '';
+  String _currentSubTab = '推荐';
+  late TabController _mainTabController = TabController(length: _keywords.length, vsync: this);
+  late TabController _subTabController = TabController(length: 3, vsync: this);
+  List<JobList> _jobLists = [];
+  final ScrollController _scrollController = ScrollController();
+  List<Job> _jobs = [];
+  bool _isLoading = false;
+  
   @override
   void initState() {
     super.initState();
-    _mainTabController = TabController(length: _keywords.length, vsync: this);
-    _subTabController = TabController(length: 3, vsync: this);
     _fetchKeywords();
+    // 初始化三个 JobList，对应推荐、附近、最新三个标签页
+    _jobLists = List.generate(3, (index) => JobList(
+      key: GlobalKey<_JobListState>(),
+      onLoadMore: _refreshJobList,
+    ));
+    _loadJobs();
+    _scrollController.addListener(_onScroll);
+  }
+  
+  void _loadJobs() {
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+      });
+      _jobs.addAll(widget.onLoadMore());
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
+  void refreshJobList() {
+    setState(() {
+      _jobs.clear();
+    });
+    _loadJobs();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      _loadJobs();
+    }
+  }
+  
   Future<void> _fetchKeywords() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
-    try {
+  try {
       final response = await dio.get("getKeywords");
       // 判断返回数据是否正确
       if (response.statusCode == 200 &&
@@ -44,6 +90,9 @@ class _HomeScreenContentState extends State<HomeScreenContent>
         _mainTabController =
             TabController(length: _keywords.length, vsync: this);
         _subTabController = TabController(length: 3, vsync: this);
+        if (_keywords.isNotEmpty) {
+          _currentMainTab = _keywords[0];
+        }
       }
     } on DioException catch (e) {
       _errorMessage = '请求异常 ${e.message}';
@@ -62,15 +111,33 @@ class _HomeScreenContentState extends State<HomeScreenContent>
         '医疗健康'
       ];
       _mainTabController = TabController(length: _keywords.length, vsync: this);
+      if (_keywords.isNotEmpty) {
+        _currentMainTab = _keywords[0];
+      }
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+  // 刷新职位列表数据
+  List<Job> _refreshJobList() {
+    // TODO: 这里将来需要根据_currentMainTab和_currentSubTab调用后端接口获取数据
+    return _generateSampleJobs();
+  }
+  void _onSearch(String query) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchScreen(initialQuery: query),
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
     _mainTabController.dispose();
     _subTabController.dispose();
     super.dispose();
@@ -79,6 +146,30 @@ class _HomeScreenContentState extends State<HomeScreenContent>
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // 搜索栏
+        Container(
+          padding: const EdgeInsets.all(16.0),
+          color: Colors.white,
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: '搜索职位、公司或技能标签',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            onSubmitted: _onSearch,
+          ),
+        ),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -105,7 +196,16 @@ class _HomeScreenContentState extends State<HomeScreenContent>
                   height: 44,
                 )).toList(),
                 onTap: (index) {
+                  setState(() {
+                    _currentMainTab = _keywords[index];
+                  });
                   _subTabController.index = 0;
+                  _currentSubTab = '推荐';
+                  // 刷新当前标签页的职位列表
+                  if (_subTabController.index >= 0 && _subTabController.index < _jobLists.length) {
+                    final state = (_jobLists[_subTabController.index].key as GlobalKey<_JobListState>).currentState;
+                    state?.refreshJobList();
+                  }
                 },
               ),
               TabBar(
@@ -119,6 +219,11 @@ class _HomeScreenContentState extends State<HomeScreenContent>
                   Tab(text: '附近', height: 40),
                   Tab(text: '最新', height: 40),
                 ],
+                onTap: (index) {
+                  setState(() {
+                    _currentSubTab = ['推荐', '附近', '最新'][index];
+                  });
+                },
               ),
             ],
           ),
@@ -126,14 +231,7 @@ class _HomeScreenContentState extends State<HomeScreenContent>
         Expanded(
           child: TabBarView(
             controller: _subTabController,
-            children: [
-              // 推荐
-              JobList(jobs: _generateSampleJobs()),
-              // 附近
-              JobList(jobs: _generateSampleJobs()),
-              // 最新
-              JobList(jobs: _generateSampleJobs()),
-            ],
+            children: _jobLists.map((jobList) => jobList).toList(),
           ),
         ),
       ],

@@ -215,9 +215,23 @@ class JobDetailScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 45),
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                icon: const Icon(Icons.message),
-                label: const Text('立即沟通'),
+                icon: const Icon(Icons.message, color: Colors.white),
+                label: const Text(
+                  '立即沟通',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
