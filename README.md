@@ -1,16 +1,63 @@
-# zhaopingapp
+# 在线招聘APP（Online Recruitment APP）
+## 项目概述 📄
+本项目为跨平台的手机端在线招聘应用，目的是帮助用户便捷地浏览职位信息、提交申请与简历，并高效管理求职过程中的各项任务。APP 提供了职位详情浏览、申请记录管理、在线沟通、个性化推荐以及招聘相关资讯等功能。
+## 主要功能 🚀
+### 职位浏览与申请 📌
+- **职位列表与详细信息**: 通过清晰的界面展示职位卡片与职位详情信息，帮助用户快速查看与选择感兴趣的职位。
+- **职位收藏功能**: 允许用户对感兴趣的职位收藏与管理，方便后续申请查阅。
 
-A new Flutter project.
+### 求职申请管理 📝
+- **简历上传与管理**: 提供上传简历功能，支持在线简历预览与便捷管理。
+- **历史申请记录**: 帮助用户清晰浏览申请历史记录，并随时了解申请状态。
+- **个性化测评与面试管理**: 包含性格测试、能力测验及在线面试列表等功能，帮助用户更好地准备与应对招聘环节。
 
-## Getting Started
+### 实时沟通功能 💬
+- **聊天页面**: 提供面试者与招聘方实时沟通聊天功能，提升沟通效率。
+- **常用短语**: 提供常用沟通短语建议，助力快速高效交流。
 
-This project is a starting point for a Flutter application.
+### 个性化推荐与招聘会信息 🔖
+- **个性推荐职位功能**: 根据用户兴趣和历史记录，智能推荐匹配度高的职位。
+- **线上招聘会实时资讯**: 提供最新招聘会相关信息与参与方式，方便用户直接参与线上招聘活动。
 
-A few resources to get you started if this is your first Flutter project:
+## 项目结构说明 🗂️
+```
+OnlineRecruitmentAPP/
+├── lib/
+│   ├── models/           // 数据模型层
+│   ├── services/         // 服务层，处理网络请求与数据交互
+│   ├── screens/          // 界面 UI 页面
+│   ├── widgets/          // 可复用小组件
+│   └── main.dart         // 项目入口
+├── android/              // Android 原生项目(files needed for native integration)
+├── ios/                  // iOS 原生项目(files needed for native integration)
+├── test/                 // 测试代码
+├── web/                  // Web 应用入口
+├── windows/              // Windows 桌面端支持
+├── macos/                // macOS 桌面端支持
+├── linux/                // Linux 支持
+├── pubspec.yaml          // 项目依赖和版本管理
+└── README.md             // 项目介绍文档
+```
+## 技术栈 🛠️
+- **Flutter**: 跨平台 UI 框架，便于快速迭代开发。
+- **Dart**: 清晰易懂的语言，便于维护与扩展。
+- **Dio**: 网络请求框架，统一管理 API 请求与响应处理。
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 开始使用 🚩
+1. 克隆本仓库到本地。
+2. 在项目目录运行：
+    ```
+    flutter pub get
+    ```
+3. 启动应用程序：
+    ```
+    flutter run
+    ```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 开发与贡献 🤝
+欢迎贡献代码，开发步骤和代码规范请参考项目已有实现进行开发，如需提交代码，请发起Pull Request，我们将会尽快审核并合并。
+如有建议、问题或 Bug，请直接提交 Issue，我们将及时处理。
+## 许可证 📜
+本项目采用 MIT 许可证，更多详情参见项目根目录下的 `LICENSE` 文件（如有）。
+感谢您的关注与支持！ 🌟
+

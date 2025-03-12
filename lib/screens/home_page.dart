@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/ProfileScreenContent.dart';
-import 'SplashScreen.dart';
 import 'chat_screen.dart';
-import 'home_screen.dart';
 import 'HomeScreenContent.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -61,12 +59,22 @@ class _MyHomePageState extends State<MyHomePage>
         // 主要内容
         Scaffold(
           appBar: AppBar(
-            title: const Text('首页'),
+            title: const Text('首页',
+                style: TextStyle(
+                  color: Colors.white,
+                )),
+            centerTitle: true,
+            backgroundColor: const Color(0xFF4CAF50),
+            elevation: 2,
           ),
-          body: Center(
-            child: _widgetOptions.elementAt(_selectedIndex),
-          ),
+          body: _widgetOptions.elementAt(_selectedIndex),
           bottomNavigationBar: BottomNavigationBar(
+            selectedItemColor: const Color(0xFF4CAF50),
+            unselectedItemColor: Colors.grey,
+            backgroundColor: Colors.white,
+            elevation: 10,
+            currentIndex: _selectedIndex,
+            type: BottomNavigationBarType.fixed,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
@@ -81,20 +89,23 @@ class _MyHomePageState extends State<MyHomePage>
                 label: '我的',
               ),
             ],
-            currentIndex: _selectedIndex,
             onTap: _onItemTapped,
           ),
         ),
         // 开屏动画
         if (_visible)
           FadeTransition(
-            opacity: _opacity,
-            child: Container(
-              color: Theme.of(context).primaryColor,
-              child: const Center(
-                child: SplashScreen(), // 你可以替换成你的 Logo 或其他 Widget
-              ),
-            ),
+              opacity: _opacity,
+              child: Container(
+                color: Colors.white,
+                child: Center(
+                    child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          const Color(0xFF4CAF50),
+                        )
+                    ), // 你可以替换成你的 Logo 或其他 Widget
+                ),
+              )
           ),
       ],
     );

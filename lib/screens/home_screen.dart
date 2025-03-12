@@ -18,6 +18,11 @@ class JobListContainer extends StatefulWidget {
 class _JobListContainerState extends State<JobListContainer>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+
+  // 新增定义的变量
+  String _errorMessage = '';
+  String _currentMainTab = '';
+
   List<String> _keywords = [
     '技术开发',
     '产品运营',
@@ -28,9 +33,7 @@ class _JobListContainerState extends State<JobListContainer>
     '教育培训',
     '医疗健康'
   ];
-  String _errorMessage = '';
-  String _currentMainTab = '';
-  String _currentSubTab = '推荐';
+
   late TabController _mainTabController =
       TabController(length: _keywords.length, vsync: this);
   late TabController _subTabController = TabController(length: 3, vsync: this);
@@ -40,6 +43,10 @@ class _JobListContainerState extends State<JobListContainer>
   void initState() {
     super.initState();
     _fetchKeywords();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+    _initControllers();
     // 初始化三个 JobListView，对应推荐、附近、最新三个标签页
     _jobListViews = List.generate(
         3,
@@ -48,6 +55,18 @@ class _JobListContainerState extends State<JobListContainer>
                   debugLabel: 'JobListView_$index'),
               onLoadMore: widget.onLoadMore,
             ));
+  }
+
+  void _initControllers() {
+    _mainTabController = TabController(length: _keywords.length, vsync: this);
+    _subTabController = TabController(length: 3, vsync: this);
+    _jobListViews = List.generate(
+      3,
+      (index) => JobListView(
+        key: GlobalKey<_JobListViewState>(debugLabel: 'JobListView_$index'),
+        onLoadMore: widget.onLoadMore,
+      ),
+    );
   }
 
   Future<void> _fetchKeywords() async {
@@ -60,19 +79,17 @@ class _JobListContainerState extends State<JobListContainer>
       if (response.statusCode == 200 &&
           response.data['code'] == 200 &&
           response.data['date'] is List) {
-        _keywords = response.data['date'].cast<String>();
-        _mainTabController =
-            TabController(length: _keywords.length, vsync: this);
-        _subTabController = TabController(length: 3, vsync: this);
-        if (_keywords.isNotEmpty) {
-          _currentMainTab = _keywords[0];
-        }
+        final newKeywords = response.data['date'].cast<String>();
+        setState(() {
+          _keywords = newKeywords;
+        });
       }
     } on DioException catch (e) {
-      _errorMessage = '请求异常 ${e.message}';
-      if (e.response != null) {
-        _errorMessage = '请求异常 ${e.response!.statusCode} ${e.response!.data}';
-      }
+      setState(() {
+        _errorMessage = e.response != null
+            ? '请求异常 ${e.response!.statusCode} ${e.response!.data}'
+            : '请求异常 ${e.message}';
+      });
       // 在请求失败时设置默认的关键词数据
       _keywords = [
         '技术开发',
@@ -88,7 +105,25 @@ class _JobListContainerState extends State<JobListContainer>
       if (_keywords.isNotEmpty) {
         _currentMainTab = _keywords[0];
       }
+    } finally {
+      _disposeControllers(); // dispose原控制器避免泄漏
+      _initControllers();
+      if (_keywords.isNotEmpty) {
+        _currentMainTab = _keywords[0];
+      }
     }
+  }
+
+  void _disposeControllers() {
+    _mainTabController.dispose();
+    _subTabController.dispose();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _disposeControllers();
+    super.dispose();
   }
 
   void _onSearch(String query) {
@@ -98,14 +133,6 @@ class _JobListContainerState extends State<JobListContainer>
         builder: (context) => SearchScreen(initialQuery: query),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _mainTabController.dispose();
-    _subTabController.dispose();
-    super.dispose();
   }
 
   @override
@@ -120,17 +147,25 @@ class _JobListContainerState extends State<JobListContainer>
             controller: _searchController,
             decoration: InputDecoration(
               hintText: '搜索职位、公司或技能标签',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF4CAF50)),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: const Icon(
+                        Icons.clear,
+                        color: Colors.grey,
+                      ),
                       onPressed: () {
                         _searchController.clear();
+                        setState(() {});
                       },
                     )
                   : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: const BorderSide(color: Color(0xFF4CAF50)),
               ),
             ),
             onSubmitted: _onSearch,
@@ -141,61 +176,33 @@ class _JobListContainerState extends State<JobListContainer>
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.green,
                 spreadRadius: 1,
-                blurRadius: 3,
-                offset: const Offset(0, 2),
+                blurRadius: 4,
               ),
             ],
           ),
-          child: Column(
-            children: [
-              TabBar(
-                controller: _mainTabController,
-                isScrollable: true,
-                labelColor: Colors.blue,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.blue,
-                indicatorWeight: 3,
-                tabs: _keywords
-                    .map((keyword) => Tab(
-                          text: keyword,
-                          height: 44,
-                        ))
-                    .toList(),
-                onTap: (index) {
-                  setState(() {
-                    _currentMainTab = _keywords[index];
-                  });
-                  _subTabController.index = 0;
-                  _currentSubTab = '推荐';
-                  // 刷新当前标签页的职位列表
-                  if (_subTabController.index >= 0 &&
-                      _subTabController.index < _jobListViews.length) {
-                    final state = (_jobListViews[_subTabController.index].key
-                            as GlobalKey<_JobListViewState>)
-                        .currentState;
-                    state?.refreshJobList();
-                  }
-                },
-              ),
-              TabBar(
-                controller: _subTabController,
-                labelColor: Colors.blue,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.blue,
-                indicatorWeight: 3,
-                tabs: const [
-                  Tab(text: '推荐', height: 40),
-                  Tab(text: '附近', height: 40),
-                  Tab(text: '最新', height: 40),
-                ],
-                onTap: (index) {
-                  setState(() {
-                    _currentSubTab = ['推荐', '附近', '最新'][index];
-                  });
-                },
-              ),
+          child: TabBar(
+            controller: _mainTabController,
+            indicatorColor: const Color(0xFF4CAF50),
+            labelColor: const Color(0xFF4CAF50),
+            unselectedLabelColor: Colors.grey,
+            isScrollable: true,
+            tabs: _keywords.map((keyword) => Tab(text: keyword)).toList(),
+          ),
+        ),
+        // 副Tabs
+        Container(
+          color: Colors.white,
+          child: TabBar(
+            controller: _subTabController,
+            indicatorColor: const Color(0xFF4CAF50),
+            labelColor: const Color(0xFF4CAF50),
+            unselectedLabelColor: Colors.grey,
+            tabs: const [
+              Tab(text: "推荐"),
+              Tab(text: "附近"),
+              Tab(text: "最新"),
             ],
           ),
         ),
@@ -221,7 +228,7 @@ class JobListView extends StatefulWidget {
 
 class _JobListViewState extends State<JobListView> {
   final ScrollController _scrollController = ScrollController();
-  List<Job> _jobs = [];
+  final List<Job> _jobs = [];
   bool _isLoading = false;
   String? _error;
 
@@ -322,4 +329,3 @@ class _JobListViewState extends State<JobListView> {
     );
   }
 }
-

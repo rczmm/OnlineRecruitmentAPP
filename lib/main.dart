@@ -15,26 +15,60 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '我的应用',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.grey[100],
+        primarySwatch: Colors.green,
+        scaffoldBackgroundColor: Colors.white,
         // 文本主题
         textTheme: const TextTheme(
-          bodyMedium: TextStyle(fontSize: 16.0), // 修改默认文本大小
+          bodyMedium: TextStyle(fontSize: 16.0, color: Colors.black87),
         ),
         // AppBar 主题
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue, // 修改 AppBar 背景色
-          titleTextStyle:
-              TextStyle(color: Colors.white, fontSize: 20), //修改AppBar标题样式
+          backgroundColor: Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          elevation: 2,
+          titleTextStyle: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          iconTheme: IconThemeData(color: Colors.white),
         ),
-        // 其他主题属性，例如按钮、卡片、对话框等
+        // 其他主题属性,按钮
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green, //修改ElevatedButton的背景色
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
         )),
+        // 卡片统一样式：现代化简洁风格
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          shadowColor: Colors.grey.withOpacity(0.2),
+        ),
+        // 文本框样式
+        inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+        // 图标主题 默认协调绿
+        iconTheme: const IconThemeData(color: Color(0xFF4CAF50)),
+        // Chip标签主题，美观便利
+        chipTheme: ChipThemeData(
+          backgroundColor: const Color(0xFFDFF2BF),
+          labelStyle: const TextStyle(color: Color(0xFF4CAF50)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
       ),
       home: const MyHomePage(),
     );
   }
 }
-
