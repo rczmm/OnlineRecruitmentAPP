@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // 导入 WebSocket 包
+import '../widgets/chat_bubble.dart';
 
 class ChatScreen extends StatefulWidget {
   final String peerName; // 对方的用户名
@@ -14,12 +15,14 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<ChatMessage> _messages = []; // 存储聊天消息
   late WebSocketChannel _channel;
+  String userAvatarUrl = "https://example.com/avatar.jpg"; // 用户的头像URL
 
   @override
   void initState() {
     super.initState();
     // 连接 WebSocket 服务器，替换成你的服务器地址
-    _channel = WebSocketChannel.connect(Uri.parse('ws://your-websocket-server-url'));
+    _channel =
+        WebSocketChannel.connect(Uri.parse('ws://your-websocket-server-url'));
 
     // 监听服务器发送的消息
     _channel.stream.listen((message) {
@@ -28,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
           sender: widget.peerName, // 假设服务器发来的消息是对方的
           text: message,
           isMe: false,
+          avatarUrl: userAvatarUrl,
         ));
       });
     });
@@ -48,6 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
           sender: '我',
           text: _controller.text,
           isMe: true,
+          avatarUrl: userAvatarUrl,
         ));
         _controller.clear();
       });
@@ -98,6 +103,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             sender: '我',
                                             text: '[附件简历] 我的简历.pdf',
                                             isMe: true,
+                                            avatarUrl: userAvatarUrl,
                                           ));
                                         });
                                         _channel.sink.add('[附件简历] 我的简历.pdf');
@@ -113,6 +119,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             sender: '我',
                                             text: '[附件简历] 英文简历.pdf',
                                             isMe: true,
+                                            avatarUrl: userAvatarUrl,
                                           ));
                                         });
                                         _channel.sink.add('[附件简历] 英文简历.pdf');
@@ -214,22 +221,22 @@ class ChatMessage extends StatelessWidget {
   final String sender;
   final String text;
   final bool isMe;
+  final String avatarUrl; // Add avatarUrl
 
-  const ChatMessage({super.key, required this.sender, required this.text, required this.isMe});
+  const ChatMessage({
+    super.key,
+    required this.sender,
+    required this.text,
+    required this.isMe,
+    required this.avatarUrl, // Add avatarUrl to constructor
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: isMe ? Alignment.topRight : Alignment.topLeft,
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.blue[200] : Colors.grey[300],
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Text(text),
-      ),
+    return ChatBubble(
+      message: text,
+      isSender: isMe,
+      avatarUrl: avatarUrl,
     );
   }
 }

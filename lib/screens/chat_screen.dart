@@ -6,6 +6,8 @@ import '../ChatScreen.dart';
 import '../common_phrases_page.dart';
 import '../greeting_page.dart';
 import '../widgets/JobCardWidget.dart';
+import '../widgets/chat_bubble.dart';
+
 
 class ChatScreenContent extends StatefulWidget {
   const ChatScreenContent({super.key});
@@ -19,6 +21,7 @@ class _ChatScreenContentState extends State<ChatScreenContent>
   // 混入 TickerProviderStateMixin 用于 TabController
   late TabController _tabController;
   late TabController _interactionTabController; // 互动Tab的控制器
+
 
   @override
   void initState() {

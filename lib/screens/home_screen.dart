@@ -20,8 +20,6 @@ class _JobListContainerState extends State<JobListContainer>
   final TextEditingController _searchController = TextEditingController();
 
   // 新增定义的变量
-  String _errorMessage = '';
-  String _currentMainTab = '';
 
   List<String> _keywords = [
     '技术开发',
@@ -71,7 +69,6 @@ class _JobListContainerState extends State<JobListContainer>
 
   Future<void> _fetchKeywords() async {
     setState(() {
-      _errorMessage = '';
     });
     try {
       final response = await dio.get("getKeywords");
@@ -86,9 +83,6 @@ class _JobListContainerState extends State<JobListContainer>
       }
     } on DioException catch (e) {
       setState(() {
-        _errorMessage = e.response != null
-            ? '请求异常 ${e.response!.statusCode} ${e.response!.data}'
-            : '请求异常 ${e.message}';
       });
       // 在请求失败时设置默认的关键词数据
       _keywords = [
@@ -103,13 +97,11 @@ class _JobListContainerState extends State<JobListContainer>
       ];
       _mainTabController = TabController(length: _keywords.length, vsync: this);
       if (_keywords.isNotEmpty) {
-        _currentMainTab = _keywords[0];
       }
     } finally {
       _disposeControllers(); // dispose原控制器避免泄漏
       _initControllers();
       if (_keywords.isNotEmpty) {
-        _currentMainTab = _keywords[0];
       }
     }
   }
