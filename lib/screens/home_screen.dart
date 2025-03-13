@@ -185,8 +185,12 @@ class _JobListContainerState extends State<JobListContainer>
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
-            tabs: _keywords.map((keyword) => Tab(text: keyword,iconMargin:
-            EdgeInsets.zero,)).toList(),
+            tabs: _keywords
+                .map((keyword) => Tab(
+                      text: keyword,
+                      iconMargin: EdgeInsets.zero,
+                    ))
+                .toList(),
             // 使用 _keywords 列表动态生成 Tab 标签，每个标签显示一个 keyword
             onTap: (index) {
               // Tab 标签点击事件回调函数
