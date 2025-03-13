@@ -183,8 +183,8 @@ class _JobListContainerState extends State<JobListContainer>
             unselectedLabelColor: Colors.grey,
             // 未选中 Tab 标签文本颜 色，这里是灰色
             isScrollable: true,
-            tabAlignment: TabAlignment.start,
             // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
+            tabAlignment: TabAlignment.start, // 设置 Tab 标签对齐方式，这里是从左侧开始对齐
             tabs: _keywords
                 .map((keyword) => Tab(
                       text: keyword,
