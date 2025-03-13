@@ -68,8 +68,7 @@ class _JobListContainerState extends State<JobListContainer>
   }
 
   Future<void> _fetchKeywords() async {
-    setState(() {
-    });
+    setState(() {});
     try {
       final response = await dio.get("getKeywords");
       // 判断返回数据是否正确
@@ -82,8 +81,7 @@ class _JobListContainerState extends State<JobListContainer>
         });
       }
     } on DioException catch (e) {
-      setState(() {
-      });
+      setState(() {});
       // 在请求失败时设置默认的关键词数据
       _keywords = [
         '技术开发',
@@ -96,13 +94,11 @@ class _JobListContainerState extends State<JobListContainer>
         '医疗健康'
       ];
       _mainTabController = TabController(length: _keywords.length, vsync: this);
-      if (_keywords.isNotEmpty) {
-      }
+      if (_keywords.isNotEmpty) {}
     } finally {
       _disposeControllers(); // dispose原控制器避免泄漏
       _initControllers();
-      if (_keywords.isNotEmpty) {
-      }
+      if (_keywords.isNotEmpty) {}
     }
   }
 
@@ -181,6 +177,9 @@ class _JobListContainerState extends State<JobListContainer>
             unselectedLabelColor: Colors.grey,
             isScrollable: true,
             tabs: _keywords.map((keyword) => Tab(text: keyword)).toList(),
+            onTap: (index) {
+              _subTabController.index = 0;
+            },
           ),
         ),
         // 副Tabs
