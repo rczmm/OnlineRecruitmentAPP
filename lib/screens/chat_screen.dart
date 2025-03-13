@@ -6,7 +6,6 @@ import '../ChatScreen.dart';
 import '../common_phrases_page.dart';
 import '../greeting_page.dart';
 import '../widgets/JobCardWidget.dart';
-import '../widgets/chat_bubble.dart';
 
 
 class ChatScreenContent extends StatefulWidget {

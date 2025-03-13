@@ -160,34 +160,49 @@ class _JobListContainerState extends State<JobListContainer>
           ),
         ),
         Container(
+          // BoxDecoration 用于装饰 Container
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white, // 设置 Container 的背景颜色为白色
             boxShadow: [
+              // boxShadow 属性定义阴影效果，这里是一个包含单个 BoxShadow 的列表
               BoxShadow(
-                color: Colors.green,
-                spreadRadius: 1,
-                blurRadius: 4,
+                color: Colors.green, // 阴影颜色为绿色
+                spreadRadius: 2, // 阴影扩散半径，正值向外扩散，负值向内收缩，这里扩散 1 像素
+                blurRadius: 4, // 阴影模糊半径，值越大阴影越模糊，这里模糊半径为 4 像素
               ),
             ],
           ),
           child: TabBar(
+            // Container 的子 Widget 是 TabBar，实现了 Tab 标签页效果
             controller: _mainTabController,
+            // TabBar 的控制器，用于管理 Tab 页的切换
             indicatorColor: const Color(0xFF4CAF50),
+            // 指示器颜色，即 Tab 选中时的下划线颜色，这里是绿色 (0xFF4CAF50)
             labelColor: const Color(0xFF4CAF50),
+            // 选中 Tab 标签文本颜色，这里是绿色 (0xFF4CAF50)
             unselectedLabelColor: Colors.grey,
+            // 未选中 Tab 标签文本颜 色，这里是灰色
             isScrollable: true,
-            tabs: _keywords.map((keyword) => Tab(text: keyword)).toList(),
+            tabAlignment: TabAlignment.start,
+            // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
+            tabs: _keywords.map((keyword) => Tab(text: keyword,iconMargin:
+            EdgeInsets.zero,)).toList(),
+            // 使用 _keywords 列表动态生成 Tab 标签，每个标签显示一个 keyword
             onTap: (index) {
-              _subTabController.index = 0;
-              // Update the JobListViews with the new main tab index
+              // Tab 标签点击事件回调函数
+              _subTabController.index = 0; // 切换二级 Tab 控制器的索引为 0 (如果存在)
+              // 更新 JobListViews 列表，根据新的主 Tab 索引
               _jobListViews = List.generate(
-                3,
+                3, // 生成 3 个 JobListView
                 (subIndex) => JobListView(
+                    // 创建 JobListView Widget
                     key: GlobalKey<_JobListViewState>(
+                        // 为每个 JobListView 创建 GlobalKey，用于在代码中操作 Widget 状态
                         debugLabel: 'JobListView_$subIndex'),
-                    onLoadMore: widget.onLoadMore),
+                    // Debug 标签，方便调试
+                    onLoadMore: widget.onLoadMore), // 传递 onLoadMore 加载更多数据的回调函数
               );
-              setState(() {}); // Rebuild the widget
+              setState(() {}); // 触发 Widget 重建，更新 UI
             },
           ),
         ),

@@ -136,6 +136,7 @@ class HomeScreenContent extends StatelessWidget {
           benefits: ['五险一金', '年终奖', '带薪年假', '加班补助'],
           description: '负责公司核心业务系统的开发和维护工作',
           requirements: ['本科及以上学历', '3年以上相关工作经验', '良好的团队协作能力'],
+          isFavorite: true,
           status: '未投递',
           date: DateTime.now().toString().substring(0, 10));
     });

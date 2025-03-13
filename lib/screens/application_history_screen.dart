@@ -31,7 +31,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       hrName: "张女士",
       workExperience: "3年",
       education: "本科",
-      benefits: ["五险一金", "带薪年假", "节日福利"]
+      benefits: ["五险一金", "带薪年假", "节日福利"],
+      isFavorite: true,
     ),
     Job(
       id: '2',
@@ -48,7 +49,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
          hrName: "张女士",
       workExperience: "3年",
       education: "本科",
-      benefits: ["五险一金", "带薪年假", "节日福利"]
+      benefits: ["五险一金", "带薪年假", "节日福利"],
+      isFavorite: true,
     ),
   ];
 
@@ -68,7 +70,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       hrName: '李经理',
       workExperience: '5年',
       education: '本科',
-      benefits: ['五险一金', '年终奖', '股票期权']
+      benefits: ['五险一金', '年终奖', '股票期权'],
+      isFavorite: true,
     ),
     Job(
       id: '4',
@@ -85,7 +88,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       hrName: '王HR',
       workExperience: '3年',
       education: '本科',
-      benefits: ['五险一金', '弹性工作', '免费三餐']
+      benefits: ['五险一金', '弹性工作', '免费三餐'],
+      isFavorite: true,
     ),
   ];
 

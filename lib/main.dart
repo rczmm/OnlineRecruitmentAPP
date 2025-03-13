@@ -33,12 +33,12 @@ class MyApp extends StatelessWidget {
         // 其他主题属性,按钮
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        )),
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            )),
         // 卡片统一样式：现代化简洁风格
         cardTheme: CardTheme(
           color: Colors.white,
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: const Color(0xFFDFF2BF),
           labelStyle: const TextStyle(color: Color(0xFF4CAF50)),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
       home: const MyHomePage(),

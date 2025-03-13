@@ -12,11 +12,12 @@ class Job {
   final String education;
   final List<String> benefits;
   final String description;
-  
+
   final List<String> requirements;
   final String status;
   final String date;
   final DateTime? interviewTime;
+  final bool isFavorite;
 
   factory Job.fromJson(Map<String, dynamic> json) {
     return Job(
@@ -26,17 +27,28 @@ class Job {
       company: json['company']?.toString() ?? '',
       companySize: json['companySize']?.toString() ?? '',
       companyLogo: json['companyLogo']?.toString() ?? '',
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+              [],
       hrName: json['hrName']?.toString() ?? '',
       location: json['location']?.toString() ?? '',
       workExperience: json['workExperience']?.toString() ?? '',
       education: json['education']?.toString() ?? '',
-      benefits: (json['benefits'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      benefits: (json['benefits'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       description: json['description']?.toString() ?? '',
-      requirements: (json['requirements'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      requirements: (json['requirements'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       status: json['status']?.toString() ?? '',
       date: json['date']?.toString() ?? '',
-      interviewTime: json['interviewTime'] != null ? DateTime.parse(json['interviewTime'].toString()) : null,
+      interviewTime: json['interviewTime'] != null
+          ? DateTime.parse(json['interviewTime'].toString())
+          : null,
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 
@@ -58,5 +70,6 @@ class Job {
     required this.status,
     required this.date,
     this.interviewTime,
+    required this.isFavorite,
   });
 }

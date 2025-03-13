@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import '../ChatScreen.dart';
+import '../services/dio_client.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;
@@ -16,13 +17,53 @@ class JobDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              // TODO: 实现分享功能
+              // 弹窗
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(title: const Text('分享职位'), actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'WeChat',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'QQ',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Copying Link',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Cancel',
+                        ),
+                      ),
+                    ]);
+                  });
             },
           ),
           IconButton(
-            icon: const Icon(Icons.favorite_border),
+            icon: Icon(job.isFavorite ? Icons.favorite : Icons.favorite_border),
             onPressed: () {
-              // TODO: 实现收藏功能
+              // TODO 添加收藏功能
+              dio.post('http://localhost:3000/favorite',
+                  data: {'jobId': job.id});
             },
           ),
         ],
@@ -49,7 +90,7 @@ class JobDetailScreen extends StatelessWidget {
                       job.salary,
                       style: const TextStyle(
                         fontSize: 20,
-                        color: Colors.blue,
+                        color: Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -61,15 +102,16 @@ class JobDetailScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.05),
+                    color: Colors.green.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 25,
-                        backgroundColor: Colors.blue.withOpacity(0.1),
-                        child: const Icon(Icons.business, size: 30, color: Colors.blue),
+                        backgroundColor: Colors.green.withOpacity(0.1),
+                        child: const Icon(Icons.business,
+                            size: 30, color: Colors.green),
                       ),
                       const SizedBox(width: 16),
                       Column(
@@ -103,15 +145,16 @@ class JobDetailScreen extends StatelessWidget {
                   runSpacing: 8,
                   children: job.tags
                       .map((tag) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: Colors.green.shade50,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.blue.shade100),
+                              border: Border.all(color: Colors.green.shade100),
                             ),
                             child: Text(
                               tag,
-                              style: TextStyle(color: Colors.blue.shade700),
+                              style: TextStyle(color: Colors.green.shade700),
                             ),
                           ))
                       .toList(),
@@ -215,7 +258,7 @@ class JobDetailScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 45),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                   elevation: 3,
                   shape: RoundedRectangleBorder(
