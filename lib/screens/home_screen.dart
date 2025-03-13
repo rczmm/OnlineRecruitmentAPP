@@ -179,6 +179,15 @@ class _JobListContainerState extends State<JobListContainer>
             tabs: _keywords.map((keyword) => Tab(text: keyword)).toList(),
             onTap: (index) {
               _subTabController.index = 0;
+              // Update the JobListViews with the new main tab index
+              _jobListViews = List.generate(
+                3,
+                (subIndex) => JobListView(
+                    key: GlobalKey<_JobListViewState>(
+                        debugLabel: 'JobListView_$subIndex'),
+                    onLoadMore: widget.onLoadMore),
+              );
+              setState(() {}); // Rebuild the widget
             },
           ),
         ),
