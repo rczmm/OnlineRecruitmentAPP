@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:zhaopingapp/screens/CollectScreen.dart';
 
 import '../AttachmentResumePage.dart';
 import '../ResumePage.dart';
+import '../screens/PendingInterviewScreen.dart';
 import '../screens/PersonalityTestScreen.dart';
 import '../screens/QuizScreen.dart';
 import '../screens/RecruitmentFair.dart';
@@ -65,8 +67,28 @@ class ProfileScreenContent extends StatelessWidget {
                 },
                 child: const StatusCounter(label: '已投递', count: 5),
               ),
-              const StatusCounter(label: '待面试', count: 2),
-              const StatusCounter(label: '收藏', count: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PendingInterviewScreen(),
+                    ),
+                  );
+                },
+                child: const StatusCounter(label: '待面试', count: 2),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CollectScreen(),
+                    ),
+                  );
+                },
+                child: const StatusCounter(label: '收藏', count: 2),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -153,6 +175,8 @@ class ProfileScreenContent extends StatelessWidget {
 }
 
 class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
