@@ -80,7 +80,7 @@ class _JobListContainerState extends State<JobListContainer>
           _keywords = newKeywords;
         });
       }
-    } on DioException catch (e) {
+    } on DioException {
       setState(() {});
       // 在请求失败时设置默认的关键词数据
       _keywords = [
@@ -184,7 +184,8 @@ class _JobListContainerState extends State<JobListContainer>
             // 未选中 Tab 标签文本颜 色，这里是灰色
             isScrollable: true,
             // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
-            tabAlignment: TabAlignment.start, // 设置 Tab 标签对齐方式，这里是从左侧开始对齐
+            tabAlignment: TabAlignment.start,
+            // 设置 Tab 标签对齐方式，这里是从左侧开始对齐
             tabs: _keywords
                 .map((keyword) => Tab(
                       text: keyword,
