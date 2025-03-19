@@ -8,7 +8,6 @@ import '../screens/RecruitmentFair.dart';
 import '../screens/application_history_screen.dart';
 import 'StatusCounter.dart';
 
-
 class ProfileScreenContent extends StatelessWidget {
   const ProfileScreenContent({super.key});
 
@@ -21,12 +20,19 @@ class ProfileScreenContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 头像框
-          const Center(
-            // 使用 Center 使头像居中
-            child: CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage(// 使用网络图片，可以替换为本地图片
-                  'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200'), // 示例头像
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AuthScreen()),
+              );
+            },
+            child: const Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(
+                    'https://i1.hdslb.com/bfs/archive/f9744141e26fe4010860b6cef6ccfb149791b4b7.jpg'),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -40,7 +46,8 @@ class ProfileScreenContent extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ApplicationHistoryScreen(initialTabIndex: 1),
+                      builder: (context) =>
+                          const ApplicationHistoryScreen(initialTabIndex: 1),
                     ),
                   );
                 },
@@ -51,7 +58,8 @@ class ProfileScreenContent extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ApplicationHistoryScreen(initialTabIndex: 0),
+                      builder: (context) =>
+                          const ApplicationHistoryScreen(initialTabIndex: 0),
                     ),
                   );
                 },
@@ -157,7 +165,8 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(_isLogin ? '登录' : '注册')),
       body: Center(
-        child: SingleChildScrollView(// 防止键盘遮挡
+        child: SingleChildScrollView(
+          // 防止键盘遮挡
           padding: EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

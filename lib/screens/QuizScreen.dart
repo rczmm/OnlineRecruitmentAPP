@@ -16,6 +16,8 @@ class Question {
 }
 
 class QuizScreen extends StatefulWidget {
+  const QuizScreen({super.key});
+
   @override
   _QuizScreenState createState() => _QuizScreenState();
 }
@@ -56,7 +58,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
       Question(
         questionText: 'Flutter中StatefulWidget和StatelessWidget的区别？',
-        options: ['前者有状态，后者无状态', '前者无状态，后者有状态','没有区别','前者用于静态UI，后者用于动态UI'],
+        options: ['前者有状态，后者无状态', '前者无状态，后者有状态', '没有区别', '前者用于静态UI，后者用于动态UI'],
         correctAnswerIndex: 0,
         explanation: 'StatefulWidget拥有可变状态，而StatelessWidget没有。',
       ),
@@ -69,48 +71,49 @@ class _QuizScreenState extends State<QuizScreen> {
       setState(() {
         _score++;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("回答正确"),backgroundColor: Colors.green,));
-    }else{
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("回答错误"),backgroundColor: Colors.red,));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("回答正确"),
+        backgroundColor: Colors.green,
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("回答错误"),
+        backgroundColor: Colors.red,
+      ));
     }
     setState(() {
       _currentQuestionIndex++;
-      if (_currentQuestionIndex == _questions.length) {
-        _showResultDialog();
-      }else if(_currentQuestionIndex > _questions.length){
-        _currentQuestionIndex = _questions.length;
-      }
     });
-  }
-
-  void _showResultDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('测试结果'),
-          content: Text('你答对了 $_score / ${_questions.length} 道题'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // 关闭对话框
-                setState(() {
-                  _currentQuestionIndex = 0;
-                  _score = 0; // 重置
-                });
-              },
-              child: Text('重新测试'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
       return Center(child: CircularProgressIndicator()); // 加载中
+    }
+    if (_currentQuestionIndex >= _questions.length) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('测试结束！',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text('你答对了 $_score / ${_questions.length} 道题',
+                style: TextStyle(fontSize: 18)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _currentQuestionIndex = 0;
+                  _score = 0;
+                });
+              },
+              child: Text('重新测试'),
+            ),
+          ],
+        ),
+      );
     }
     final currentQuestion = _questions[_currentQuestionIndex];
     return Scaffold(
@@ -134,7 +137,8 @@ class _QuizScreenState extends State<QuizScreen> {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ElevatedButton(
-                  onPressed: () => _answerQuestion(currentQuestion.options.indexOf(option)),
+                  onPressed: () =>
+                      _answerQuestion(currentQuestion.options.indexOf(option)),
                   child: Text(option),
                 ),
               );

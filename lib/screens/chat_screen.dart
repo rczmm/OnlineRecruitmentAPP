@@ -272,7 +272,7 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                                           ],
                                           isCurved: true,
                                           barWidth: 3,
-                                          color: Colors.purple,
+                                          color: Colors.green,
                                           belowBarData:
                                           BarAreaData(show: false),
                                         ),
@@ -342,7 +342,8 @@ class ChatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const CircleAvatar(child: Icon(Icons.person)), // 头像
+      leading: const CircleAvatar(child: Icon(Icons.person, color: Colors.green))
+      , // 头像
       title: Text(name),
       subtitle: Text(message),
     );
