@@ -1,6 +1,7 @@
 import 'dart:io'; // 导入io库以进行文件操作（如果需要）
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 导入日期格式化库
+import 'package:intl/intl.dart';
+import 'package:zhaopingapp/widgets/NetworkPDFViewer.dart'; // 导入日期格式化库
 
 class AttachmentResumePage extends StatefulWidget {
   const AttachmentResumePage({super.key});
@@ -12,8 +13,14 @@ class AttachmentResumePage extends StatefulWidget {
 class _AttachmentResumePageState extends State<AttachmentResumePage> {
   // 模拟PDF文件列表，实际应用中需要从文件系统或服务器获取
   final List<PdfFile> pdfFiles = [
-    PdfFile(name: '我的简历1.pdf', size: '1.2MB', lastModified: DateTime.now().subtract(const Duration(days: 1))),
-    PdfFile(name: '项目经验.pdf', size: '800KB', lastModified: DateTime.now().subtract(const Duration(days: 7))),
+    PdfFile(
+        name: '我的简历1.pdf',
+        size: '1.2MB',
+        lastModified: DateTime.now().subtract(const Duration(days: 1))),
+    PdfFile(
+        name: '项目经验.pdf',
+        size: '800KB',
+        lastModified: DateTime.now().subtract(const Duration(days: 7))),
     PdfFile(name: '求职信.pdf', size: '500KB', lastModified: DateTime.now()),
   ];
 
@@ -39,13 +46,15 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton( // 返回按钮
+        leading: IconButton(
+          // 返回按钮
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('附件简历'),
         actions: [
-          IconButton( // 提示按钮
+          IconButton(
+            // 提示按钮
             icon: const Icon(Icons.info_outline),
             onPressed: _showHintDialog,
           ),
@@ -56,15 +65,26 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded( // 使用Expanded使列表填充可用空间
+            Expanded(
+              // 使用Expanded使列表填充可用空间
               child: ListView.builder(
                 itemCount: pdfFiles.length,
                 itemBuilder: (context, index) {
                   final file = pdfFiles[index];
                   return Card(
                     child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => NetworkPDFViewer(
+                                    pdfUrl:
+                                        "https://arxiv.org/pdf/2502.10215")));
+                      },
                       title: Text(file.name),
-                      subtitle: Text('${file.size} - ${DateFormat('yyyy-MM-dd HH:mm').format(file.lastModified)}'), // 格式化日期
+                      subtitle: Text(
+                          '${file.size} - ${DateFormat('yyyy-MM-dd HH:mm').format(file.lastModified)}'),
+                      // 格式化日期
                       trailing: const Icon(Icons.picture_as_pdf), // PDF图标
                     ),
                   );
