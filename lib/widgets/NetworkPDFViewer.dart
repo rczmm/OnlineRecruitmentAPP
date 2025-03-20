@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class NetworkPDFViewer extends StatelessWidget {
   final String pdfUrl;
@@ -12,8 +11,8 @@ class NetworkPDFViewer extends StatelessWidget {
       appBar: AppBar(
         title: const Text('网络 PDF 查看器'),
       ),
-      body: SfPdfViewer.network(
-        pdfUrl,
+      body: const Center(
+        child: Text('网络 PDF 查看器'),
       ),
     );
   }
