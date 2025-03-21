@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // 导入 WebSocket 包
 import '../widgets/chat_bubble.dart';
 
 class ChatScreen extends StatefulWidget {
   final String peerName; // 对方的用户名
+  final String id; // 当前用户的用户名
 
-  const ChatScreen({super.key, required this.peerName});
+  const ChatScreen({super.key, required this.peerName, required this.id});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -16,24 +19,39 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = []; // 存储聊天消息
   late WebSocketChannel _channel;
   String userAvatarUrl = "https://example.com/avatar.jpg"; // 用户的头像URL
+  String? myUserId;
 
   @override
   void initState() {
     super.initState();
-    // 连接 WebSocket 服务器，替换成你的服务器地址
-    _channel =
-        WebSocketChannel.connect(Uri.parse('ws://your-websocket-server-url'));
+    myUserId = "123456"; // Access the passed userId
+    // 连接 WebSocket 服务器，替换成你的服务器地址, and include your own userId
+    // For example, if your userId is 'user1'
+    _channel = WebSocketChannel.connect(
+        Uri.parse('ws://localhost:8080/chat?userId=$myUserId'));
 
     // 监听服务器发送的消息
     _channel.stream.listen((message) {
-      setState(() {
-        _messages.add(ChatMessage(
-          sender: widget.peerName, // 假设服务器发来的消息是对方的
-          text: message,
-          isMe: false,
-          avatarUrl: userAvatarUrl,
-        ));
-      });
+      try {
+        final decodedMessage = jsonDecode(message);
+        final senderId = decodedMessage['senderId'];
+        final text = decodedMessage['text'];
+
+        setState(() {
+          _messages.add(ChatMessage(
+            sender: senderId == '110' ? '我' : senderId,
+            // Display '我' for your own messages echoed back
+            text: text,
+            isMe: senderId == '110',
+            avatarUrl:
+                userAvatarUrl, // You'll need to handle peer's avatar URL based on senderId
+          ));
+        });
+      } catch (e) {
+        print('Error decoding message: $e');
+        print('Raw message: $message');
+        // Handle non-JSON messages or errors
+      }
     });
   }
 
@@ -46,7 +64,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      _channel.sink.add(_controller.text); // 发送消息到服务器
+      final message = {
+        'recipientId': widget.id, // The user you are chatting with
+        'text': _controller.text,
+      };
+      final jsonMessage = jsonEncode(message);
+      _channel.sink.add(jsonMessage); // Send JSON message to the server
       setState(() {
         _messages.add(ChatMessage(
           sender: '我',
@@ -76,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(10.0),
             child: Column(
               children: [
                 Row(

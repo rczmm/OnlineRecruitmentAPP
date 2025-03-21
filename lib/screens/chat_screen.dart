@@ -7,7 +7,6 @@ import '../common_phrases_page.dart';
 import '../greeting_page.dart';
 import '../widgets/JobCardWidget.dart';
 
-
 class ChatScreenContent extends StatefulWidget {
   const ChatScreenContent({super.key});
 
@@ -20,7 +19,6 @@ class _ChatScreenContentState extends State<ChatScreenContent>
   // 混入 TickerProviderStateMixin 用于 TabController
   late TabController _tabController;
   late TabController _interactionTabController; // 互动Tab的控制器
-
 
   @override
   void initState() {
@@ -107,7 +105,8 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CommonPhrasesPage(),
+                                  builder: (context) =>
+                                      const CommonPhrasesPage(),
                                 ),
                               );
                             },
@@ -183,7 +182,10 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatScreen(peerName: "小凤神"),
+                              builder: (context) => ChatScreen(
+                                peerName: "小凤神",
+                                id: "1101",
+                              ),
                             ),
                           );
                         },
@@ -195,8 +197,11 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatScreen(peerName: "用户B"), // 传递正确的用户名
+                              builder: (context) => ChatScreen(
+                                peerName: "用户B",
+                                id: "111",
+                              ), //
+                              // 传递正确的用户名
                             ),
                           );
                         },
@@ -209,8 +214,8 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatScreen(peerName: "用户C"), // 传递正确的用户名
+                              builder: (context) => ChatScreen(
+                                  peerName: "用户C", id: "123456"), // 传递正确的用户名
                             ),
                           );
                         },
@@ -258,7 +263,7 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                                           isCurved: true,
                                           barWidth: 3,
                                           belowBarData:
-                                          BarAreaData(show: false),
+                                              BarAreaData(show: false),
                                         ),
                                         LineChartBarData(
                                           spots: const [
@@ -274,7 +279,7 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                                           barWidth: 3,
                                           color: Colors.green,
                                           belowBarData:
-                                          BarAreaData(show: false),
+                                              BarAreaData(show: false),
                                         ),
                                       ],
                                     ),
@@ -342,8 +347,8 @@ class ChatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: const CircleAvatar(child: Icon(Icons.person, color: Colors.green))
-      , // 头像
+      leading: const CircleAvatar(
+          child: Icon(Icons.person, color: Colors.green)), // 头像
       title: Text(name),
       subtitle: Text(message),
     );

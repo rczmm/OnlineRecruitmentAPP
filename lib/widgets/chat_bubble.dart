@@ -7,11 +7,11 @@ class ChatBubble extends StatelessWidget {
   final String avatarUrl;
 
   const ChatBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.isSender,
     required this.avatarUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -252,7 +252,8 @@ class JobDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ChatScreen(peerName: job.hrName),
+                      builder: (context) =>
+                          ChatScreen(peerName: job.hrName, id: job.id),
                     ),
                   );
                 },
