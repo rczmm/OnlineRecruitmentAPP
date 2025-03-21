@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zhaopingapp/screens/CollectScreen.dart';
+import 'package:zhaopingapp/screens/collect_screen.dart';
 
 import '../AttachmentResumePage.dart';
 import '../ResumePage.dart';
@@ -209,7 +209,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               TextField(
                 obscureText: true, // 隐藏密码
                 decoration: InputDecoration(
@@ -227,7 +227,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
                   // 处理登录/注册逻辑
