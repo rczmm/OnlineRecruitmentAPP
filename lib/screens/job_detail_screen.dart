@@ -102,14 +102,14 @@ class JobDetailScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.05),
+                    color: Colors.green.withAlpha(26),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 25,
-                        backgroundColor: Colors.green.withOpacity(0.1),
+                        backgroundColor: Colors.green.withAlpha(26),
                         child: const Icon(Icons.business,
                             size: 30, color: Colors.green),
                       ),
@@ -240,7 +240,7 @@ class JobDetailScreen extends StatelessWidget {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withAlpha(76),
                     spreadRadius: 1,
                     blurRadius: 5,
                     offset: const Offset(0, -3),
