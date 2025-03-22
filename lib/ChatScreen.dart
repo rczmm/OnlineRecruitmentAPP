@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // 导入 WebSocket 包
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 导入安全存储包
 import '../widgets/chat_bubble.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -20,39 +21,110 @@ class _ChatScreenState extends State<ChatScreen> {
   late WebSocketChannel _channel;
   String userAvatarUrl = "https://example.com/avatar.jpg"; // 用户的头像URL
   String? myUserId;
+  final _storage = FlutterSecureStorage(); // 安全存储实例
 
   @override
   void initState() {
     super.initState();
-    myUserId = "123456"; // Access the passed userId
-    // 连接 WebSocket 服务器，替换成你的服务器地址, and include your own userId
-    // For example, if your userId is 'user1'
-    _channel = WebSocketChannel.connect(
-        Uri.parse('ws://localhost:8080/chat?userId=$myUserId'));
-
-    // 监听服务器发送的消息
-    _channel.stream.listen((message) {
-      try {
-        final decodedMessage = jsonDecode(message);
-        final senderId = decodedMessage['senderId'];
-        final text = decodedMessage['text'];
-
-        setState(() {
-          _messages.add(ChatMessage(
-            sender: senderId == '110' ? '我' : senderId,
-            // Display '我' for your own messages echoed back
-            text: text,
-            isMe: senderId == '110',
-            avatarUrl:
-                userAvatarUrl, // You'll need to handle peer's avatar URL based on senderId
-          ));
-        });
-      } catch (e) {
-        print('Error decoding message: $e');
-        print('Raw message: $message');
-        // Handle non-JSON messages or errors
+    _getUserIdAndConnect();
+  }
+  
+  // 从安全存储中获取userId并连接WebSocket
+  Future<void> _getUserIdAndConnect() async {
+    // 尝试从安全存储中读取userId
+    myUserId = await _storage.read(key: 'userId');
+    
+    // 获取认证令牌
+    String? authToken = await _storage.read(key: 'authToken');
+    
+    // 如果userId为空，使用默认值或显示错误
+    if (myUserId == null || myUserId!.isEmpty) {
+      print('警告: 未找到用户ID，使用默认值');
+      myUserId = "guest_user"; // 使用访客用户ID作为后备
+    }
+    
+    // 尝试连接WebSocket服务器
+    _connectWebSocket(authToken);
+  }
+  
+  // WebSocket连接方法
+  void _connectWebSocket([String? authToken]) {
+    try {
+      // 构建WebSocket URL，添加token参数
+      String wsUrl = 'ws://127.0.0.1:8088/chat?userId=$myUserId';
+      
+      // 如果有认证令牌，添加到URL中
+      if (authToken != null && authToken.isNotEmpty) {
+        wsUrl += '&token=$authToken';
       }
-    });
+      
+      // 连接 WebSocket 服务器
+      // 使用IP地址替代localhost，因为在某些环境下localhost可能无法解析
+      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+
+      // 监听服务器发送的消息
+      _channel.stream.listen(
+        (message) {
+          try {
+            print('Received message: $message');
+            final decodedMessage = jsonDecode(message);
+            final senderId = decodedMessage['senderId'];
+            final text = decodedMessage['text'];
+
+            setState(() {
+              _messages.add(ChatMessage(
+                sender: senderId == myUserId ? '我' : senderId,
+                // Display '我' for your own messages echoed back
+                text: text,
+                isMe: senderId == myUserId,
+                avatarUrl: userAvatarUrl, 
+              ));
+            });
+          } catch (e) {
+            print('Error decoding message: $e');
+            print('Raw message: $message');
+            // 显示错误消息给用户
+            _showErrorSnackBar('消息解析错误，请稍后重试');
+          }
+        },
+        onError: (error) {
+          print('WebSocket错误: $error');
+          _showErrorSnackBar('聊天连接错误，正在尝试重新连接...');
+          // 尝试重新连接
+          Future.delayed(const Duration(seconds: 3), () {
+            _connectWebSocket();
+          });
+        },
+        onDone: () {
+          print('WebSocket连接已关闭');
+          // 如果连接意外关闭，尝试重新连接
+          _showErrorSnackBar('聊天连接已断开，正在尝试重新连接...');
+          Future.delayed(const Duration(seconds: 3), () {
+            _connectWebSocket();
+          });
+        },
+      );
+    } catch (e) {
+      print('WebSocket连接失败: $e');
+      _showErrorSnackBar('无法连接到聊天服务器，请检查网络连接或稍后重试');
+      // 延迟后尝试重新连接
+      Future.delayed(const Duration(seconds: 5), () {
+        _connectWebSocket();
+      });
+    }
+  }
+  
+  // 显示错误提示
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override

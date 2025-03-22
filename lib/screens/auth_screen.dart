@@ -81,12 +81,18 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (response.statusCode == 200) {
         final String token = response.data['data']['token'];
+        // 尝试从响应中获取userId，如果没有，则使用用户名作为userId
+        final String userId = response.data['data']['userId'].toString();
+
         setState(() {
           _authToken = token;
         });
         _addAuthInterceptor(); // 添加拦截器
-        // 导航到首页 (假设你有一个名为 HomePage 的 Widget)
-        saveAuthToken(token);
+
+        // 保存token和userId到安全存储
+        await saveAuthToken(token);
+        await _storage.write(key: 'userId', value: userId);
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MyHomePage()),
