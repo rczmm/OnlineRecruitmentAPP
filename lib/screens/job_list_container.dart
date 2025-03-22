@@ -56,21 +56,23 @@ class _JobListContainerState extends State<JobListContainer>
 
     // 检查是否需要重新创建JobListView实例
     bool needsRecreate = _jobListViews.isEmpty;
-    
+
     if (!needsRecreate) {
       // 如果已经存在JobListView实例，直接触发重新加载
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_listViewKeys[subTabIndex].currentState != null) {
-          _listViewKeys[subTabIndex].currentState!._loadJobs(
-            isNewTab: true,
-            type: selectedType,
-            tag: selectedTag
-          );
-        }
-      });
+      // 确保每次切换标签都会触发数据重新加载
+      print("切换标签: 类型=$selectedType, 标签=$selectedTag");
+
+      // 只对当前选中的子标签视图触发数据加载，避免不必要的渲染
+      if (_listViewKeys[subTabIndex].currentState != null) {
+        print("触发子标签 $subTabIndex 数据加载");
+        // 强制设置isNewTab为true，确保每次切换标签都会清空旧数据并加载新数据
+        _listViewKeys[subTabIndex]
+            .currentState!
+            ._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
+      }
       return;
     }
-    
+
     // 首次创建JobListView实例
     _jobListViews = List.generate(
       3,
@@ -86,11 +88,9 @@ class _JobListContainerState extends State<JobListContainer>
     // 只在当前选中的子标签页触发加载，避免多次加载
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_listViewKeys[subTabIndex].currentState != null) {
-        _listViewKeys[subTabIndex].currentState!._loadJobs(
-          isNewTab: true,
-          type: selectedType,
-          tag: selectedTag
-        );
+        _listViewKeys[subTabIndex]
+            .currentState!
+            ._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
       }
     });
   }
@@ -112,8 +112,8 @@ class _JobListContainerState extends State<JobListContainer>
     if (_mainTabController.indexIsChanging ||
         !_mainTabController.indexIsChanging) {
       _subTabController.index = 0; // Reset sub tab on main tab change
-      // 不在这里调用_initializeListViews，避免重复初始化
-      // 让onTap事件处理初始化
+      // 在主标签变化时，初始化当前选中的标签视图
+      _initializeListViews(_mainTabController.index, 0);
       setState(() {});
     }
   }
@@ -121,20 +121,10 @@ class _JobListContainerState extends State<JobListContainer>
   void _onSubTabChanged() {
     // 当子标签变化时，确保当前选中的子标签页重新加载数据
     if (!_subTabController.indexIsChanging) {
-      int currentIndex = _subTabController.index;
-      final selectedType = _keywords[_mainTabController.index];
-      final selectedTag = _getSubTabTag(currentIndex);
-      
-      // 触发当前选中子标签的数据重新加载
-      if (_listViewKeys[currentIndex].currentState != null) {
-        _listViewKeys[currentIndex].currentState!._loadJobs(
-          isNewTab: true,
-          type: selectedType,
-          tag: selectedTag
-        );
-      }
+      // 在子标签变化时，初始化当前选中的标签视图
+      _initializeListViews(_mainTabController.index, _subTabController.index);
+      setState(() {});
     }
-    setState(() {});
   }
 
   Future<void> _fetchKeywords() async {
@@ -263,10 +253,11 @@ class _JobListContainerState extends State<JobListContainer>
                       iconMargin: EdgeInsets.zero,
                     ))
                 .toList(),
-            // 修改onTap事件，确保只在这里调用_initializeListViews
+            // 修改onTap事件，确保每次点击都能正确触发数据更新
             onTap: (index) {
+              // 重置子标签到第一个
               _subTabController.index = 0;
-              // 在这里调用_initializeListViews，而不是在_onMainTabChanged中
+              // 强制触发数据更新
               _initializeListViews(index, 0);
               setState(() {});
             },
@@ -285,13 +276,13 @@ class _JobListContainerState extends State<JobListContainer>
               Tab(text: "附近"),
               Tab(text: "最新"),
             ],
-            // 修改onTap事件，确保只在这里调用_initializeListViews
+            // 修改onTap事件，确保每次点击都能正确触发数据更新
             onTap: (index) {
-              // 在这里调用_initializeListViews，而不是在_onSubTabChanged中
+              // 强制触发数据更新，传入当前主标签和选中的子标签
               _initializeListViews(_mainTabController.index, index);
               setState(() {});
             },
-        ),
+          ),
         ),
         Expanded(
           child: TabBarView(
@@ -346,11 +337,17 @@ class _JobListViewState extends State<JobListView> {
       bool isNewTab = false}) async {
     print("JobListView._loadJobs 被调用");
     print("isRefresh: $isRefresh, type: $type, tag: $tag, isNewTab: $isNewTab");
+    // 如果正在加载且不是刷新或新标签，则不重复加载
     if (_isLoading && !isRefresh && !isNewTab) return;
+
+    // 无论参数是否变化，每次切换标签都清空旧数据并加载新数据
+    print("标签切换：type: $type, tag: $tag");
 
     setState(() {
       _isLoading = true;
       _error = null;
+      // 每次加载都清空旧数据，确保数据更新
+      _jobs.clear();
     });
 
     try {
@@ -358,23 +355,17 @@ class _JobListViewState extends State<JobListView> {
         final newJobs = await widget.onRefresh(
             type ?? widget.initialType, tag ?? widget.initialTag);
         setState(() {
-          _jobs.clear();
           _jobs.addAll(newJobs);
+          _isLoading = false;
         });
       } else {
         final newJobs = await widget.onLoadMore(
             type ?? widget.initialType, tag ?? widget.initialTag);
         setState(() {
-          if (isNewTab) {
-            _jobs.clear();
-          }
           _jobs.addAll(newJobs);
           _isLoading = false;
         });
       }
-      setState(() {
-        _isLoading = false;
-      });
     } catch (e) {
       setState(() {
         _error = '加载数据失败：$e';
