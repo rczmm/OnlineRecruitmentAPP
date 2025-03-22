@@ -162,37 +162,96 @@ class JobDetailScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 const SizedBox(height: 24),
                 // 职位描述
-                const Text(
-                  '职位描述',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  '岗位描述',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  '1. 负责公司产品的开发和维护；\n'
-                  '2. 参与产品技术方案的设计和实现；\n'
-                  '3. 编写高质量的代码和技术文档；\n'
-                  '4. 解决开发过程中的技术难题；\n'
-                  '5. 参与code review，提升团队代码质量。',
-                  style: TextStyle(fontSize: 16, height: 1.5),
+                Text(
+                  job.description,
+                  style: const TextStyle(fontSize: 16, height: 1.5),
                 ),
                 const SizedBox(height: 24),
-
-                // 职位要求
-                const Text(
-                  '职位要求',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '职位要求',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (job.requirements.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: job.requirements.map((requirement) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('• ',
+                                    style: TextStyle(
+                                        fontSize: 16, height: 1.5)), // 使用圆点作为符号
+                                Expanded(
+                                  child: Text(
+                                    requirement,
+                                    style: const TextStyle(
+                                        fontSize: 16, height: 1.5),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      )
+                    else
+                      const Text("暂无岗位要求",
+                          style: TextStyle(fontSize: 16, height: 1.5)),
+                    const SizedBox(height: 8),
+                  ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  '1. 本科及以上学历，计算机相关专业；\n'
-                  '2. 3年以上相关开发经验；\n'
-                  '3. 熟悉常用的设计模式和数据结构；\n'
-                  '4. 具有良好的团队协作能力和沟通能力；\n'
-                  '5. 有大型项目开发经验者优先。',
-                  style: TextStyle(fontSize: 16, height: 1.5),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '岗位福利',
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (job.requirements.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: job.benefits.map((requirement) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('• ',
+                                    style: TextStyle(
+                                        fontSize: 16, height: 1.5)), // 使用圆点作为符号
+                                Expanded(
+                                  child: Text(
+                                    requirement,
+                                    style: const TextStyle(
+                                        fontSize: 16, height: 1.5),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      )
+                    else
+                      const Text("暂无岗位福利",
+                          style: TextStyle(fontSize: 16, height: 1.5)),
+                    const SizedBox(height: 8),
+                  ],
                 ),
-                const SizedBox(height: 24),
-
                 // 工作地点
                 const Text(
                   '工作地点',
