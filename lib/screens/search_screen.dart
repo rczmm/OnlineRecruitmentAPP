@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../models/job.dart';
 import '../services/dio_client.dart';
 import '../widgets/job_card.dart';
@@ -7,7 +6,7 @@ import '../widgets/job_card.dart';
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
 
-  const SearchScreen({Key? key, this.initialQuery}) : super(key: key);
+  const SearchScreen({super.key, this.initialQuery});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -40,7 +39,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (!_isLoading && _hasMore) {
         _loadMore();
       }
@@ -97,7 +97,8 @@ class _SearchScreenState extends State<SearchScreen> {
       if (response.statusCode == 200 && response.data['code'] == 200) {
         final List<dynamic> newJobs = response.data['data']['jobs'];
         setState(() {
-          _searchResults.addAll(newJobs.map((job) => Job.fromJson(job)).toList());
+          _searchResults
+              .addAll(newJobs.map((job) => Job.fromJson(job)).toList());
           _currentPage++;
           _hasMore = newJobs.length >= 10;
           _isLoading = false;
