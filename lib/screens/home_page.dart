@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/ProfileScreenContent.dart';
 import 'chat_screen.dart';
-import 'HomeScreenContent.dart';
+import 'home_screen_content.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
