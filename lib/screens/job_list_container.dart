@@ -294,10 +294,8 @@ class _JobListViewState extends State<JobListView> {
   @override
   void initState() {
     super.initState();
-    if (_isInitialLoad) {
-      _loadJobs(type: widget.initialType, tag: widget.initialTag);
-      _isInitialLoad = false; // Set flag to false after the first load
-    }
+    // 移除这里的初始加载，避免与addPostFrameCallback中的加载重复
+    // 初始加载将完全由父组件通过GlobalKey控制
     _scrollController.addListener(_onScroll);
   }
 

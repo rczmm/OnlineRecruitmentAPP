@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
-import 'home_screen.dart';
+import 'job_list_container.dart';
 import 'package:dio/dio.dart';
 import 'package:zhaopingapp/services/dio_client.dart';
 
@@ -40,11 +40,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         final List<Job> newJobs =
             jobList.map((json) => Job.fromJson(json)).toList();
         setState(() {
-          if (_page == 0 || type != null) {
-            _allJobs.clear();
-          }
           _allJobs.addAll(newJobs);
-
           if (newJobs.isNotEmpty) {
             _page++;
           }
@@ -117,6 +113,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   Future<List<Job>> _refreshJobs(String? type, String? tag) async {
     setState(() {
       _page = 1;
+      _allJobs.clear();
       if (type != null) {
         _currentTag = tag!;
         _currentType = type;
