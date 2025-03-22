@@ -197,6 +197,56 @@ class _JobListContainerState extends State<JobListContainer>
       ),
     );
   }
+  
+  // 显示所有职位类型的对话框
+  void _showCategoryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('选择职位类型', style: TextStyle(color: Color(0xFF4CAF50))),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _keywords.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_keywords[index]),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // 设置选中的标签
+                    _mainTabController.animateTo(index);
+                    // 重置子标签到第一个
+                    _subTabController.index = 0;
+                    // 强制触发数据更新
+                    _initializeListViews(index, 0);
+                    setState(() {});
+                  },
+                  // 当前选中的标签显示绿色
+                  textColor: _mainTabController.index == index 
+                      ? const Color(0xFF4CAF50) 
+                      : null,
+                  // 当前选中的标签显示勾选图标
+                  trailing: _mainTabController.index == index 
+                      ? const Icon(Icons.check, color: Color(0xFF4CAF50)) 
+                      : null,
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('取消', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -250,34 +300,60 @@ class _JobListContainerState extends State<JobListContainer>
               ),
             ],
           ),
-          child: TabBar(
-            // Container 的子 Widget 是 TabBar，实现了 Tab 标签页效果
-            controller: _mainTabController,
-            // TabBar 的控制器，用于管理 Tab 页的切换
-            indicatorColor: const Color(0xFF4CAF50),
-            // 指示器颜色，即 Tab 选中时的下划线颜色，这里是绿色 (0xFF4CAF50)
-            labelColor: const Color(0xFF4CAF50),
-            // 选中 Tab 标签文本颜色，这里是绿色 (0xFF4CAF50)
-            unselectedLabelColor: Colors.grey,
-            // 未选中 Tab 标签文本颜 色，这里是灰色
-            isScrollable: true,
-            // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
-            tabAlignment: TabAlignment.start,
-            // 设置 Tab 标签对齐方式，这里是从左侧开始对齐
-            tabs: _keywords
-                .map((keyword) => Tab(
-                      text: keyword,
-                      iconMargin: EdgeInsets.zero,
-                    ))
-                .toList(),
-            // 修改onTap事件，确保每次点击都能正确触发数据更新
-            onTap: (index) {
-              // 重置子标签到第一个
-              _subTabController.index = 0;
-              // 强制触发数据更新
-              _initializeListViews(index, 0);
-              setState(() {});
-            },
+          child: Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              TabBar(
+                // Container 的子 Widget 是 TabBar，实现了 Tab 标签页效果
+                controller: _mainTabController,
+                // TabBar 的控制器，用于管理 Tab 页的切换
+                indicatorColor: const Color(0xFF4CAF50),
+                // 指示器颜色，即 Tab 选中时的下划线颜色，这里是绿色 (0xFF4CAF50)
+                labelColor: const Color(0xFF4CAF50),
+                // 选中 Tab 标签文本颜色，这里是绿色 (0xFF4CAF50)
+                unselectedLabelColor: Colors.grey,
+                // 未选中 Tab 标签文本颜 色，这里是灰色
+                isScrollable: true,
+                // 设置 TabBar 是否可滚动，如果 Tab 标签过多超出屏幕宽度，设置为 true 可以水平滚动
+                tabAlignment: TabAlignment.start,
+                // 设置 Tab 标签对齐方式，这里是从左侧开始对齐
+                tabs: _keywords
+                    .map((keyword) => Tab(
+                          text: keyword,
+                          iconMargin: EdgeInsets.zero,
+                        ))
+                    .toList(),
+                // 修改onTap事件，确保每次点击都能正确触发数据更新
+                onTap: (index) {
+                  // 重置子标签到第一个
+                  _subTabController.index = 0;
+                  // 强制触发数据更新
+                  _initializeListViews(index, 0);
+                  setState(() {});
+                },
+                // 为TabBar添加右侧内边距，为展开按钮留出空间
+                padding: const EdgeInsets.only(right: 40),
+              ),
+              // 添加展开按钮
+              Positioned(
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      left: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.more_vert, color: Color(0xFF4CAF50)),
+                    onPressed: () {
+                      _showCategoryDialog(context);
+                    },
+                    tooltip: '展开所有分类',
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         // 副Tabs
