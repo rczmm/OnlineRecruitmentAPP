@@ -97,7 +97,6 @@ class JobDetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-
                 // 公司信息
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -138,7 +137,6 @@ class JobDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 // 标签
                 Wrap(
                   spacing: 8,
@@ -160,7 +158,33 @@ class JobDetailScreen extends StatelessWidget {
                       .toList(),
                 ),
                 const SizedBox(height: 24),
-                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.school_outlined, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Text(
+                        '学历要求：${job.education}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.work_outline, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Text(
+                        '工作经验：${job.workExperience}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+
                 // 职位描述
                 Text(
                   '岗位描述',
@@ -173,6 +197,7 @@ class JobDetailScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 16, height: 1.5),
                 ),
                 const SizedBox(height: 24),
+                // 职位要求
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -213,6 +238,7 @@ class JobDetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
+                // 岗位福利
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -269,7 +295,6 @@ class JobDetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-
                 // HR信息
                 const Text(
                   '招聘者信息',
