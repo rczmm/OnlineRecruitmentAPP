@@ -62,14 +62,31 @@ class _JobListContainerState extends State<JobListContainer>
       // 确保每次切换标签都会触发数据重新加载
       print("切换标签: 类型=$selectedType, 标签=$selectedTag");
 
-      // 只对当前选中的子标签视图触发数据加载，避免不必要的渲染
-      if (_listViewKeys[subTabIndex].currentState != null) {
-        print("触发子标签 $subTabIndex 数据加载");
-        // 强制设置isNewTab为true，确保每次切换标签都会清空旧数据并加载新数据
-        _listViewKeys[subTabIndex]
-            .currentState!
-            ._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
+      // 立即触发数据重新加载，不使用addPostFrameCallback
+      for (int i = 0; i < _listViewKeys.length; i++) {
+        if (_listViewKeys[i].currentState != null) {
+          print("触发子标签 $i 数据加载");
+          // 强制设置isNewTab为true，确保每次切换标签都会清空旧数据并加载新数据
+          _listViewKeys[i]
+              .currentState!
+              ._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
+        }
       }
+      
+      // 强制重建TabBarView，确保UI更新
+      setState(() {
+        // 重新创建JobListView实例，以强制TabBarView刷新
+        _jobListViews = List.generate(
+          3,
+          (index) => JobListView(
+            key: _listViewKeys[index],
+            onLoadMore: (String? type, String? tag) => widget.onLoadMore(type, tag),
+            onRefresh: (String? type, String? tag) => widget.onRefresh(type, tag),
+            initialType: selectedType,
+            initialTag: selectedTag,
+          ),
+        );
+      });
       return;
     }
 
@@ -112,8 +129,8 @@ class _JobListContainerState extends State<JobListContainer>
     if (_mainTabController.indexIsChanging ||
         !_mainTabController.indexIsChanging) {
       _subTabController.index = 0; // Reset sub tab on main tab change
-      // 在主标签变化时，初始化当前选中的标签视图
-      _initializeListViews(_mainTabController.index, 0);
+      // 不在这里调用_initializeListViews，避免重复初始化
+      // 让onTap事件处理初始化
       setState(() {});
     }
   }
@@ -121,8 +138,8 @@ class _JobListContainerState extends State<JobListContainer>
   void _onSubTabChanged() {
     // 当子标签变化时，确保当前选中的子标签页重新加载数据
     if (!_subTabController.indexIsChanging) {
-      // 在子标签变化时，初始化当前选中的标签视图
-      _initializeListViews(_mainTabController.index, _subTabController.index);
+      // 不在这里直接触发数据加载，而是通过onTap事件处理
+      // 这样可以避免与_initializeListViews中的逻辑冲突
       setState(() {});
     }
   }
@@ -351,21 +368,27 @@ class _JobListViewState extends State<JobListView> {
     });
 
     try {
+      List<Job> newJobs;
       if (isRefresh) {
-        final newJobs = await widget.onRefresh(
+        newJobs = await widget.onRefresh(
             type ?? widget.initialType, tag ?? widget.initialTag);
-        setState(() {
-          _jobs.addAll(newJobs);
-          _isLoading = false;
-        });
       } else {
-        final newJobs = await widget.onLoadMore(
+        newJobs = await widget.onLoadMore(
             type ?? widget.initialType, tag ?? widget.initialTag);
-        setState(() {
-          _jobs.addAll(newJobs);
-          _isLoading = false;
-        });
       }
+      
+      // 使用一个setState来更新所有状态，确保UI刷新
+      setState(() {
+        _jobs.addAll(newJobs);
+        _isLoading = false;
+        // 强制触发重建，确保ListView刷新
+        if (isNewTab) {
+          // 如果是切换标签，添加一个微小延迟确保UI更新
+          Future.microtask(() {
+            if (mounted) setState(() {});
+          });
+        }
+      });
     } catch (e) {
       setState(() {
         _error = '加载数据失败：$e';
@@ -420,6 +443,25 @@ class _JobListViewState extends State<JobListView> {
       );
     }
 
+    if (_jobs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text('暂无职位信息', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: refreshJobList,
+              child: const Text('刷新'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 使用ValueKey强制刷新ListView，确保数据变化时UI更新
     return RefreshIndicator(
       onRefresh: () async {
         _jobs.clear();
@@ -427,6 +469,7 @@ class _JobListViewState extends State<JobListView> {
             isRefresh: true, type: widget.initialType, tag: widget.initialTag);
       },
       child: ListView.builder(
+        key: ValueKey('${widget.initialType}-${widget.initialTag}-${_jobs.length}'),
         controller: _scrollController,
         itemCount: _jobs.length + (_isLoading ? 1 : 0),
         itemBuilder: (context, index) {
