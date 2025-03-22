@@ -52,27 +52,43 @@ class _JobListContainerState extends State<JobListContainer>
   void _initializeListViews(int mainTabIndex, int subTabIndex) {
     if (_keywords.isEmpty || mainTabIndex >= _keywords.length) return;
     final selectedType = _keywords[mainTabIndex];
-    final selectedTag = _getSubTabTag(subTabIndex); // Implement this function
+    final selectedTag = _getSubTabTag(subTabIndex);
 
+    // 检查是否需要重新创建JobListView实例
+    bool needsRecreate = _jobListViews.isEmpty;
+    
+    if (!needsRecreate) {
+      // 如果已经存在JobListView实例，直接触发重新加载
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_listViewKeys[subTabIndex].currentState != null) {
+          _listViewKeys[subTabIndex].currentState!._loadJobs(
+            isNewTab: true,
+            type: selectedType,
+            tag: selectedTag
+          );
+        }
+      });
+      return;
+    }
+    
+    // 首次创建JobListView实例
     _jobListViews = List.generate(
       3,
       (index) => JobListView(
         key: _listViewKeys[index],
         onLoadMore: (String? type, String? tag) => widget.onLoadMore(type, tag),
-        // 直接传递两个参数
         onRefresh: (String? type, String? tag) => widget.onRefresh(type, tag),
-        // 直接传递两个参数
         initialType: selectedType,
         initialTag: selectedTag,
       ),
     );
-    
+
     // 只在当前选中的子标签页触发加载，避免多次加载
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_listViewKeys[subTabIndex].currentState != null) {
         _listViewKeys[subTabIndex].currentState!._loadJobs(
-          isNewTab: true, 
-          type: selectedType, 
+          isNewTab: true,
+          type: selectedType,
           tag: selectedTag
         );
       }
@@ -103,8 +119,21 @@ class _JobListContainerState extends State<JobListContainer>
   }
 
   void _onSubTabChanged() {
-    // 不在这里调用_initializeListViews，避免重复初始化
-    // 让onTap事件处理初始化
+    // 当子标签变化时，确保当前选中的子标签页重新加载数据
+    if (!_subTabController.indexIsChanging) {
+      int currentIndex = _subTabController.index;
+      final selectedType = _keywords[_mainTabController.index];
+      final selectedTag = _getSubTabTag(currentIndex);
+      
+      // 触发当前选中子标签的数据重新加载
+      if (_listViewKeys[currentIndex].currentState != null) {
+        _listViewKeys[currentIndex].currentState!._loadJobs(
+          isNewTab: true,
+          type: selectedType,
+          tag: selectedTag
+        );
+      }
+    }
     setState(() {});
   }
 
@@ -258,10 +287,11 @@ class _JobListContainerState extends State<JobListContainer>
             ],
             // 修改onTap事件，确保只在这里调用_initializeListViews
             onTap: (index) {
-            // 在这里调用_initializeListViews，而不是在_onSubTabChanged中
-            _initializeListViews(_mainTabController.index, index);
-            setState(() {});
-          },
+              // 在这里调用_initializeListViews，而不是在_onSubTabChanged中
+              _initializeListViews(_mainTabController.index, index);
+              setState(() {});
+            },
+        ),
         ),
         Expanded(
           child: TabBarView(
