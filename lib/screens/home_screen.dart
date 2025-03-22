@@ -7,7 +7,7 @@ import '../widgets/job_card.dart';
 import 'search_screen.dart';
 
 class JobListContainer extends StatefulWidget {
-  final List<Job> Function() onLoadMore;
+  final Future<List<Job>> Function() onLoadMore; // 修改这里
 
   const JobListContainer({super.key, required this.onLoadMore});
 
@@ -70,12 +70,12 @@ class _JobListContainerState extends State<JobListContainer>
   Future<void> _fetchKeywords() async {
     setState(() {});
     try {
-      final response = await dio.get("getKeywords");
+      final response = await dio.get("/job/tags");
       // 判断返回数据是否正确
       if (response.statusCode == 200 &&
           response.data['code'] == 200 &&
-          response.data['date'] is List) {
-        final newKeywords = response.data['date'].cast<String>();
+          response.data['data'] is List) {
+        final newKeywords = response.data['data'].cast<String>();
         setState(() {
           _keywords = newKeywords;
         });
@@ -238,7 +238,7 @@ class _JobListContainerState extends State<JobListContainer>
 }
 
 class JobListView extends StatefulWidget {
-  final List<Job> Function() onLoadMore;
+  final Future<List<Job>> Function() onLoadMore; // 确保这里也一致
 
   const JobListView({super.key, required this.onLoadMore});
 
@@ -260,6 +260,7 @@ class _JobListViewState extends State<JobListView> {
   }
 
   Future<void> _loadJobs() async {
+    // 将 _loadJobs 标记为 async
     if (_isLoading) return;
 
     setState(() {
@@ -268,7 +269,7 @@ class _JobListViewState extends State<JobListView> {
     });
 
     try {
-      final newJobs = widget.onLoadMore();
+      final newJobs = await widget.onLoadMore(); // 使用 await 等待 Future 完成
       setState(() {
         _jobs.addAll(newJobs);
         _isLoading = false;
@@ -328,7 +329,7 @@ class _JobListViewState extends State<JobListView> {
     return RefreshIndicator(
       onRefresh: () async {
         _jobs.clear();
-        await _loadJobs();
+        await _loadJobs(); // 确保下拉刷新也等待 Future 完成
       },
       child: ListView.builder(
         controller: _scrollController,

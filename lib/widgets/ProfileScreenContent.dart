@@ -8,6 +8,7 @@ import '../screens/PersonalityTestScreen.dart';
 import '../screens/QuizScreen.dart';
 import '../screens/RecruitmentFair.dart';
 import '../screens/application_history_screen.dart';
+import '../screens/auth_screen.dart';
 import 'StatusCounter.dart';
 
 class ProfileScreenContent extends StatelessWidget {
@@ -169,87 +170,6 @@ class ProfileScreenContent extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
-
-  @override
-  _AuthScreenState createState() => _AuthScreenState();
-}
-
-class _AuthScreenState extends State<AuthScreen> {
-  bool _isLogin = true; // 切换登录/注册状态
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_isLogin ? '登录' : '注册')),
-      body: Center(
-        child: SingleChildScrollView(
-          // 防止键盘遮挡
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(
-                      'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200'),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: '用户名',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                obscureText: true, // 隐藏密码
-                decoration: InputDecoration(
-                  labelText: '密码',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              if (!_isLogin) // 注册时显示确认密码
-                const SizedBox(height: 10),
-              if (!_isLogin) // 注册时显示确认密码
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: '确认密码',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  // 处理登录/注册逻辑
-                  if (_isLogin) {
-                    print('执行登录操作');
-                  } else {
-                    print('执行注册操作');
-                  }
-                },
-                child: Text(_isLogin ? '登录' : '注册'),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isLogin = !_isLogin; // 切换状态
-                  });
-                },
-                child: Text(_isLogin ? '没有账号？去注册' : '已有账号？去登录'),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:zhaopingapp/screens/auth_screen.dart';
 import 'package:zhaopingapp/screens/home_page.dart';
 
-// 导入 fl_chart
+final _storage = FlutterSecureStorage();
 
-void main() {
-  runApp(const MyApp());
+Future<String?> getAuthToken() async {
+  final token = await _storage.read(key: 'authToken');
+  return token;
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  String? initialToken = await getAuthToken();
+  Widget initialScreen = initialToken != null ? MyHomePage() : AuthScreen();
+  runApp(MyApp(initialScreen: initialScreen));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required Widget initialScreen});
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +43,12 @@ class MyApp extends StatelessWidget {
         // 其他主题属性,按钮
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            )),
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        )),
         // 卡片统一样式：现代化简洁风格
         cardTheme: CardTheme(
           color: Colors.white,
@@ -46,7 +56,7 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          shadowColor: Colors.grey.withOpacity(0.2),
+          shadowColor: Colors.grey.withAlpha(50),
         ),
         // 文本框样式
         inputDecorationTheme: InputDecorationTheme(
@@ -65,7 +75,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: const Color(0xFFDFF2BF),
           labelStyle: const TextStyle(color: Color(0xFF4CAF50)),
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
       home: const MyHomePage(),

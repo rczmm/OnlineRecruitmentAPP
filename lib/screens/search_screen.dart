@@ -58,13 +58,13 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
-      final response = await dio.get('/jobs/search', queryParameters: {
+      final response = await dio.post('/job/list', data: {
         'keyword': query,
-        'page': _currentPage,
+        'pageNum': _currentPage,
       });
 
       if (response.statusCode == 200 && response.data['code'] == 200) {
-        final List<dynamic> jobs = response.data['data']['jobs'];
+        final List<dynamic> jobs = response.data['data']['records'];
         setState(() {
           _searchResults = jobs.map((job) => Job.fromJson(job)).toList();
           _hasMore = jobs.length >= 10; // 假设每页10条数据
