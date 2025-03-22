@@ -24,6 +24,15 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     print("传入的 type: $type");
     print("传入的 tag: $tag");
     try {
+      // 如果type或tag发生变化，重置页码
+      if ((type != null && type != _currentType) || (tag != null && tag != _currentTag)) {
+        print("类型或标签发生变化，重置页码为1");
+        _page = 1;
+        _allJobs.clear();
+        _currentType = type ?? _currentType;
+        _currentTag = tag ?? _currentTag;
+      }
+      
       final response = await dio.post(
         "job/list",
         data: {
