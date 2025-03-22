@@ -7,9 +7,11 @@ import '../widgets/job_card.dart';
 import 'search_screen.dart';
 
 class JobListContainer extends StatefulWidget {
-  final Future<List<Job>> Function() onLoadMore; // 修改这里
+  final Future<List<Job>> Function(String? type, String? tag) onLoadMore;
+  final Future<List<Job>> Function(String? type, String? tag) onRefresh;
 
-  const JobListContainer({super.key, required this.onLoadMore});
+  const JobListContainer(
+      {super.key, required this.onLoadMore, required this.onRefresh});
 
   @override
   State<JobListContainer> createState() => _JobListContainerState();
@@ -18,86 +20,116 @@ class JobListContainer extends StatefulWidget {
 class _JobListContainerState extends State<JobListContainer>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-
-  // 新增定义的变量
-
-  List<String> _keywords = [
-    '技术开发',
-    '产品运营',
-    '设计创意',
-    '市场营销',
-    '人力资源',
-    '金融财务',
-    '教育培训',
-    '医疗健康'
-  ];
-
-  late TabController _mainTabController =
-      TabController(length: _keywords.length, vsync: this);
-  late TabController _subTabController = TabController(length: 3, vsync: this);
+  List<String> _keywords = [];
+  late TabController _mainTabController;
+  late TabController _subTabController;
+  final List<GlobalKey<_JobListViewState>> _listViewKeys =
+      List.generate(3, (index) => GlobalKey<_JobListViewState>());
   List<JobListView> _jobListViews = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchKeywords();
+    _initControllers(); // 先初始化控制器
+    _initializeDataAfterControllers(); // 然后执行需要等待关键词的操作
+  }
+
+  Future<void> _initializeDataAfterControllers() async {
+    await _fetchKeywords();
     _searchController.addListener(() {
       setState(() {});
     });
-    _initControllers();
-    // 初始化三个 JobListView，对应推荐、附近、最新三个标签页
-    _jobListViews = List.generate(
-        3,
-        (index) => JobListView(
-              key: GlobalKey<_JobListViewState>(
-                  debugLabel: 'JobListView_$index'),
-              onLoadMore: widget.onLoadMore,
-            ));
+    _mainTabController.addListener(_onMainTabChanged);
+    _subTabController.addListener(_onSubTabChanged);
+    _initializeListViews(_mainTabController.index, _subTabController.index);
   }
 
   void _initControllers() {
     _mainTabController = TabController(length: _keywords.length, vsync: this);
     _subTabController = TabController(length: 3, vsync: this);
+  }
+
+  void _initializeListViews(int mainTabIndex, int subTabIndex) {
+    if (_keywords.isEmpty || mainTabIndex >= _keywords.length) return;
+    final selectedType = _keywords[mainTabIndex];
+    final selectedTag = _getSubTabTag(subTabIndex); // Implement this function
+
     _jobListViews = List.generate(
       3,
       (index) => JobListView(
-        key: GlobalKey<_JobListViewState>(debugLabel: 'JobListView_$index'),
-        onLoadMore: widget.onLoadMore,
+        key: _listViewKeys[index],
+        onLoadMore: (String? type, String? tag) => widget.onLoadMore(type, tag),
+        // 直接传递两个参数
+        onRefresh: (String? type, String? tag) => widget.onRefresh(type, tag),
+        // 直接传递两个参数
+        initialType: selectedType,
+        initialTag: selectedTag,
       ),
     );
+    // Trigger initial load for the current tab
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listViewKeys[subTabIndex]
+          .currentState
+          ?._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
+    });
+  }
+
+  String _getSubTabTag(int index) {
+    switch (index) {
+      case 0:
+        return "recommended"; // Example tag for "推荐"
+      case 1:
+        return "nearby"; // Example tag for "附近"
+      case 2:
+        return "latest"; // Example tag for "最新"
+      default:
+        return "";
+    }
+  }
+
+  void _onMainTabChanged() {
+    if (_mainTabController.indexIsChanging ||
+        !_mainTabController.indexIsChanging) {
+      _subTabController.index = 0; // Reset sub tab on main tab change
+      _initializeListViews(_mainTabController.index, _subTabController.index);
+      setState(() {});
+    }
+  }
+
+  void _onSubTabChanged() {
+    _initializeListViews(_mainTabController.index, _subTabController.index);
+    setState(() {});
   }
 
   Future<void> _fetchKeywords() async {
     setState(() {});
     try {
       final response = await dio.get("/job/tags");
-      // 判断返回数据是否正确
       if (response.statusCode == 200 &&
           response.data['code'] == 200 &&
           response.data['data'] is List) {
-        final newKeywords = response.data['data'].cast<String>();
         setState(() {
-          _keywords = newKeywords;
+          _keywords = response.data['data'].cast<String>();
         });
+        _disposeControllers();
+        _initControllers();
       }
     } on DioException {
-      setState(() {});
-      // 在请求失败时设置默认的关键词数据
-      _keywords = [
-        '技术开发',
-        '产品运营',
-        '设计创意',
-        '市场营销',
-        '人力资源',
-        '金融财务',
-        '教育培训',
-        '医疗健康'
-      ];
-      _mainTabController = TabController(length: _keywords.length, vsync: this);
-      if (_keywords.isNotEmpty) {}
+      setState(() {
+        _keywords = [
+          '技术开发',
+          '产品运营',
+          '设计创意',
+          '市场营销',
+          '人力资源',
+          '金融财务',
+          '教育培训',
+          '医疗健康'
+        ];
+        _disposeControllers();
+        _initControllers();
+      });
     } finally {
-      _disposeControllers(); // dispose原控制器避免泄漏
-      _initControllers();
       if (_keywords.isNotEmpty) {}
     }
   }
@@ -125,6 +157,9 @@ class _JobListContainerState extends State<JobListContainer>
 
   @override
   Widget build(BuildContext context) {
+    if (_keywords.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         // 搜索栏
@@ -194,20 +229,9 @@ class _JobListContainerState extends State<JobListContainer>
                 .toList(),
             // 使用 _keywords 列表动态生成 Tab 标签，每个标签显示一个 keyword
             onTap: (index) {
-              // Tab 标签点击事件回调函数
-              _subTabController.index = 0; // 切换二级 Tab 控制器的索引为 0 (如果存在)
-              // 更新 JobListViews 列表，根据新的主 Tab 索引
-              _jobListViews = List.generate(
-                3, // 生成 3 个 JobListView
-                (subIndex) => JobListView(
-                    // 创建 JobListView Widget
-                    key: GlobalKey<_JobListViewState>(
-                        // 为每个 JobListView 创建 GlobalKey，用于在代码中操作 Widget 状态
-                        debugLabel: 'JobListView_$subIndex'),
-                    // Debug 标签，方便调试
-                    onLoadMore: widget.onLoadMore), // 传递 onLoadMore 加载更多数据的回调函数
-              );
-              setState(() {}); // 触发 Widget 重建，更新 UI
+              _subTabController.index = 0;
+              _initializeListViews(index, _subTabController.index);
+              setState(() {});
             },
           ),
         ),
@@ -224,11 +248,16 @@ class _JobListContainerState extends State<JobListContainer>
               Tab(text: "附近"),
               Tab(text: "最新"),
             ],
+            onTap: (index) {
+              _initializeListViews(_mainTabController.index, index);
+            },
           ),
         ),
         Expanded(
           child: TabBarView(
             controller: _subTabController,
+            physics: const NeverScrollableScrollPhysics(),
+            // Prevent swiping between sub-tabs
             children: _jobListViews,
           ),
         ),
@@ -238,9 +267,18 @@ class _JobListContainerState extends State<JobListContainer>
 }
 
 class JobListView extends StatefulWidget {
-  final Future<List<Job>> Function() onLoadMore; // 确保这里也一致
+  final Future<List<Job>> Function(String? type, String? tag) onLoadMore;
+  final Future<List<Job>> Function(String? type, String? tag) onRefresh;
+  final String initialType;
+  final String initialTag;
 
-  const JobListView({super.key, required this.onLoadMore});
+  const JobListView({
+    super.key,
+    required this.onLoadMore,
+    required this.onRefresh,
+    required this.initialType,
+    required this.initialTag,
+  });
 
   @override
   State<JobListView> createState() => _JobListViewState();
@@ -251,17 +289,26 @@ class _JobListViewState extends State<JobListView> {
   final List<Job> _jobs = [];
   bool _isLoading = false;
   String? _error;
+  bool _isInitialLoad = true; // Flag to track initial load
 
   @override
   void initState() {
     super.initState();
-    _loadJobs();
+    if (_isInitialLoad) {
+      _loadJobs(type: widget.initialType, tag: widget.initialTag);
+      _isInitialLoad = false; // Set flag to false after the first load
+    }
     _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _loadJobs() async {
-    // 将 _loadJobs 标记为 async
-    if (_isLoading) return;
+  Future<void> _loadJobs(
+      {bool isRefresh = false,
+      String? type,
+      String? tag,
+      bool isNewTab = false}) async {
+    print("JobListView._loadJobs 被调用");
+    print("isRefresh: $isRefresh, type: $type, tag: $tag, isNewTab: $isNewTab");
+    if (_isLoading && !isRefresh && !isNewTab) return;
 
     setState(() {
       _isLoading = true;
@@ -269,9 +316,25 @@ class _JobListViewState extends State<JobListView> {
     });
 
     try {
-      final newJobs = await widget.onLoadMore(); // 使用 await 等待 Future 完成
+      if (isRefresh) {
+        final newJobs = await widget.onRefresh(
+            type ?? widget.initialType, tag ?? widget.initialTag);
+        setState(() {
+          _jobs.clear();
+          _jobs.addAll(newJobs);
+        });
+      } else {
+        final newJobs = await widget.onLoadMore(
+            type ?? widget.initialType, tag ?? widget.initialTag);
+        setState(() {
+          if (isNewTab) {
+            _jobs.clear();
+          }
+          _jobs.addAll(newJobs);
+          _isLoading = false;
+        });
+      }
       setState(() {
-        _jobs.addAll(newJobs);
         _isLoading = false;
       });
     } catch (e) {
@@ -286,13 +349,14 @@ class _JobListViewState extends State<JobListView> {
     setState(() {
       _jobs.clear();
     });
-    _loadJobs();
+    _loadJobs(
+        isRefresh: true, type: widget.initialType, tag: widget.initialTag);
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      _loadJobs();
+      _loadJobs(type: widget.initialType, tag: widget.initialTag);
     }
   }
 
@@ -312,7 +376,8 @@ class _JobListViewState extends State<JobListView> {
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _loadJobs(),
+              onPressed: () =>
+                  _loadJobs(type: widget.initialType, tag: widget.initialTag),
               child: const Text('重试'),
             ),
           ],
@@ -329,7 +394,8 @@ class _JobListViewState extends State<JobListView> {
     return RefreshIndicator(
       onRefresh: () async {
         _jobs.clear();
-        await _loadJobs(); // 确保下拉刷新也等待 Future 完成
+        await _loadJobs(
+            isRefresh: true, type: widget.initialType, tag: widget.initialTag);
       },
       child: ListView.builder(
         controller: _scrollController,

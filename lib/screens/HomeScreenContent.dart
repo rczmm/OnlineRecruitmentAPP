@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import 'home_screen.dart';
-
 import 'package:dio/dio.dart';
 import 'package:zhaopingapp/services/dio_client.dart';
 
@@ -13,19 +12,24 @@ class HomeScreenContent extends StatefulWidget {
 }
 
 class _HomeScreenContentState extends State<HomeScreenContent> {
-  int _page = 0;
+  int _page = 1;
   final int _pageSize = 10; // 设置每页加载的数据量
   List<Job> _allJobs = [];
+  String _currentType = ''; // 保存当前选中的关键词
+  String _currentTag = '';
 
-  Future<List<Job>> _loadMoreJobs() async {
+  Future<List<Job>> _loadMoreJobs(String? type, String? tag) async {
+    print("开始加载更多职位");
+    print("当前页码 _page: $_page");
+    print("传入的 type: $type");
+    print("传入的 tag: $tag");
     try {
       final response = await dio.post(
         "job/list",
         data: {
-          "title": "", // 稍后根据搜索框的值更新
-          "company": "", // 稍后根据筛选条件更新
-          "tag": "", // 稍后根据主 Tab 的选择更新
-          "type": "",
+          "keyword": "",
+          "tag": tag ?? _currentTag,
+          "type": type ?? _currentType,
           "pageNum": _page,
           "pageSize": _pageSize,
         },
@@ -36,8 +40,14 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         final List<Job> newJobs =
             jobList.map((json) => Job.fromJson(json)).toList();
         setState(() {
+          if (_page == 0 || type != null) {
+            _allJobs.clear();
+          }
           _allJobs.addAll(newJobs);
-          _page++;
+
+          if (newJobs.isNotEmpty) {
+            _page++;
+          }
         });
         return newJobs;
       } else {
@@ -61,7 +71,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         );
         return [];
       }
-    } on DioException catch (e) {
+    } on DioException {
       // 处理 Dio 异常，例如网络连接错误
       showDialog(
         context: context,
@@ -103,8 +113,23 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     }
   }
 
+  // 添加这个方法来处理下拉刷新
+  Future<List<Job>> _refreshJobs(String? type, String? tag) async {
+    setState(() {
+      _page = 1;
+      if (type != null) {
+        _currentTag = tag!;
+        _currentType = type;
+      }
+    });
+    return await _loadMoreJobs(type, tag);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return JobListContainer(onLoadMore: _loadMoreJobs);
+    return JobListContainer(
+      onLoadMore: _loadMoreJobs,
+      onRefresh: _refreshJobs,
+    );
   }
 }
