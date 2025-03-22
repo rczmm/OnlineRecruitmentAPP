@@ -6,6 +6,8 @@ import '../ChatScreen.dart';
 import '../common_phrases_page.dart';
 import '../greeting_page.dart';
 import '../widgets/JobCardWidget.dart';
+import '../models/chat.dart';
+import '../services/chat_service.dart';
 
 class ChatScreenContent extends StatefulWidget {
   const ChatScreenContent({super.key});
@@ -19,12 +21,39 @@ class _ChatScreenContentState extends State<ChatScreenContent>
   // 混入 TickerProviderStateMixin 用于 TabController
   late TabController _tabController;
   late TabController _interactionTabController; // 互动Tab的控制器
+  final ChatService _chatService = ChatService();
+  List<Chat> _chatList = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this); // 初始化 TabController
     _interactionTabController = TabController(length: 2, vsync: this);
+    _fetchChatList(); // 获取聊天列表
+  }
+  
+  // 获取聊天列表
+  Future<void> _fetchChatList() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+      
+      final chatList = await _chatService.getChatList();
+      
+      setState(() {
+        _chatList = chatList;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = '获取聊天列表失败: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -32,6 +61,31 @@ class _ChatScreenContentState extends State<ChatScreenContent>
     _tabController.dispose(); // 释放 TabController
     _interactionTabController.dispose();
     super.dispose();
+  }
+  
+  // 判断是否需要显示日期头部
+  bool _shouldShowDateHeader(DateTime current, DateTime previous) {
+    return current.year != previous.year ||
+        current.month != previous.month ||
+        current.day != previous.day;
+  }
+  
+  // 获取日期头部文本
+  String _getDateHeader(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    
+    if (messageDate == today) {
+      return '今天';
+    } else if (messageDate == yesterday) {
+      return '昨天';
+    } else if (today.difference(messageDate).inDays < 7) {
+      return '一周内';
+    } else {
+      return '更早';
+    }
   }
 
   void _showSettingsBottomSheet(BuildContext context) {
@@ -173,55 +227,80 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                   ),
                 ),
                 Expanded(
-                  child: ListView(
-                    children: [
-                      const ListSection(title: '一周前'),
-                      GestureDetector(
-                        // 使用 GestureDetector 包裹 ListTile
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(
-                                peerName: "小凤神",
-                                id: "1101",
-                              ),
-                            ),
-                          );
-                        },
-                        child: const ChatItem(name: '小凤神', message: '圣诞快乐！'),
-                      ),
-                      GestureDetector(
-                        // 使用 GestureDetector 包裹 ChatItem
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(
-                                peerName: "用户B",
-                                id: "111",
-                              ), //
-                              // 传递正确的用户名
-                            ),
-                          );
-                        },
-                        child: const ChatItem(name: '用户B', message: '最近怎么样？'),
-                      ),
-                      const ListSection(title: '更早'),
-                      GestureDetector(
-                        // 使用 GestureDetector 包裹 ChatItem
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatScreen(
-                                  peerName: "用户C", id: "123456"), // 传递正确的用户名
-                            ),
-                          );
-                        },
-                        child: const ChatItem(name: '用户C', message: '好久不见！'),
-                      ),
-                    ],
+                  child: RefreshIndicator(
+                    onRefresh: _fetchChatList,
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _errorMessage != null
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(_errorMessage!,
+                                        style: const TextStyle(color: Colors.red)),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: _fetchChatList,
+                                      child: const Text('重试'),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : _chatList.isEmpty
+                                ? Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.chat_bubble_outline,
+                                            size: 64, color: Colors.grey),
+                                        const SizedBox(height: 16),
+                                        const Text('暂无聊天记录',
+                                            style: TextStyle(color: Colors.grey)),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton(
+                                          onPressed: _fetchChatList,
+                                          child: const Text('刷新'),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: _chatList.length,
+                                    itemBuilder: (context, index) {
+                                      final chat = _chatList[index];
+                                      // 根据日期分组显示
+                                      final bool showHeader = index == 0 ||
+                                          _shouldShowDateHeader(
+                                              chat.lastMessageTime,
+                                              _chatList[index - 1].lastMessageTime);
+                                      
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          if (showHeader)
+                                            ListSection(
+                                                title: _getDateHeader(chat.lastMessageTime)),
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => ChatScreen(
+                                                    peerName: chat.name,
+                                                    id: chat.id,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: ChatItem(
+                                              name: chat.name,
+                                              message: chat.lastMessage,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
                   ),
                 ),
               ]),
