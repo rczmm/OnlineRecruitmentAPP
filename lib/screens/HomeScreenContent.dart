@@ -14,25 +14,41 @@ class HomeScreenContent extends StatefulWidget {
 class _HomeScreenContentState extends State<HomeScreenContent> {
   int _page = 1;
   final int _pageSize = 10; // 设置每页加载的数据量
-  List<Job> _allJobs = [];
+  final List<Job> _allJobs = [];
   String _currentType = ''; // 保存当前选中的关键词
   String _currentTag = '';
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('网络错误'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<List<Job>> _loadMoreJobs(String? type, String? tag) async {
-    print("开始加载更多职位");
-    print("当前页码 _page: $_page");
-    print("传入的 type: $type");
-    print("传入的 tag: $tag");
     try {
       // 如果type或tag发生变化，重置页码
-      if ((type != null && type != _currentType) || (tag != null && tag != _currentTag)) {
-        print("类型或标签发生变化，重置页码为1");
+      if ((type != null && type != _currentType) ||
+          (tag != null && tag != _currentTag)) {
         _page = 1;
         _allJobs.clear();
         _currentType = type ?? _currentType;
         _currentTag = tag ?? _currentTag;
       }
-      
+
       final response = await dio.post(
         "job/list",
         data: {
@@ -57,63 +73,15 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         return newJobs;
       } else {
         // 可以返回一个空列表或者抛出异常，根据你的错误处理策略来决定
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('网络错误'),
-              content: Text('请检查你的网络连接并重试。'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('确定'),
-                ),
-              ],
-            );
-          },
-        );
+        _showErrorDialog('请检查你的网络连接并重试。');
         return [];
       }
     } on DioException {
       // 处理 Dio 异常，例如网络连接错误
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('网络错误'),
-            content: Text('请检查你的网络连接并重试。'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('确定'),
-              ),
-            ],
-          );
-        },
-      );
+      _showErrorDialog('请检查你的网络连接并重试。');
       return [];
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('网络错误'),
-            content: Text('请检查你的网络连接并重试。'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('确定'),
-              ),
-            ],
-          );
-        },
-      );
+      _showErrorDialog('发生错误：$e');
       return [];
     }
   }
