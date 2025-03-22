@@ -66,11 +66,16 @@ class _JobListContainerState extends State<JobListContainer>
         initialTag: selectedTag,
       ),
     );
-    // Trigger initial load for the current tab
+    
+    // 只在当前选中的子标签页触发加载，避免多次加载
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _listViewKeys[subTabIndex]
-          .currentState
-          ?._loadJobs(isNewTab: true, type: selectedType, tag: selectedTag);
+      if (_listViewKeys[subTabIndex].currentState != null) {
+        _listViewKeys[subTabIndex].currentState!._loadJobs(
+          isNewTab: true, 
+          type: selectedType, 
+          tag: selectedTag
+        );
+      }
     });
   }
 
@@ -91,13 +96,15 @@ class _JobListContainerState extends State<JobListContainer>
     if (_mainTabController.indexIsChanging ||
         !_mainTabController.indexIsChanging) {
       _subTabController.index = 0; // Reset sub tab on main tab change
-      _initializeListViews(_mainTabController.index, _subTabController.index);
+      // 不在这里调用_initializeListViews，避免重复初始化
+      // 让onTap事件处理初始化
       setState(() {});
     }
   }
 
   void _onSubTabChanged() {
-    _initializeListViews(_mainTabController.index, _subTabController.index);
+    // 不在这里调用_initializeListViews，避免重复初始化
+    // 让onTap事件处理初始化
     setState(() {});
   }
 
@@ -202,7 +209,7 @@ class _JobListContainerState extends State<JobListContainer>
               // boxShadow 属性定义阴影效果，这里是一个包含单个 BoxShadow 的列表
               BoxShadow(
                 color: Colors.green, // 阴影颜色为绿色
-                spreadRadius: 2, // 阴影扩散半径，正值向外扩散，负值向内收缩，这里扩散 1 像素
+                spreadRadius: 2, // 阴影扩散半径，正值 outward，负值 inward，这里扩散 1 像素
                 blurRadius: 4, // 阴影模糊半径，值越大阴影越模糊，这里模糊半径为 4 像素
               ),
             ],
@@ -227,10 +234,11 @@ class _JobListContainerState extends State<JobListContainer>
                       iconMargin: EdgeInsets.zero,
                     ))
                 .toList(),
-            // 使用 _keywords 列表动态生成 Tab 标签，每个标签显示一个 keyword
+            // 修改onTap事件，确保只在这里调用_initializeListViews
             onTap: (index) {
               _subTabController.index = 0;
-              _initializeListViews(index, _subTabController.index);
+              // 在这里调用_initializeListViews，而不是在_onMainTabChanged中
+              _initializeListViews(index, 0);
               setState(() {});
             },
           ),
@@ -248,10 +256,12 @@ class _JobListContainerState extends State<JobListContainer>
               Tab(text: "附近"),
               Tab(text: "最新"),
             ],
+            // 修改onTap事件，确保只在这里调用_initializeListViews
             onTap: (index) {
-              _initializeListViews(_mainTabController.index, index);
-            },
-          ),
+            // 在这里调用_initializeListViews，而不是在_onSubTabChanged中
+            _initializeListViews(_mainTabController.index, index);
+            setState(() {});
+          },
         ),
         Expanded(
           child: TabBarView(
