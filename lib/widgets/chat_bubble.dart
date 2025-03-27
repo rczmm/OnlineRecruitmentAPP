@@ -1,46 +1,73 @@
 import 'package:flutter/material.dart';
 
-// 消息气泡组件
 class ChatBubble extends StatelessWidget {
-  final String message;
+  final String? message;
+  final Widget? child;
+
   final bool isSender;
   final String avatarUrl;
 
   const ChatBubble({
     super.key,
-    required this.message,
+    this.message,
+    this.child,
     required this.isSender,
     required this.avatarUrl,
-  });
+  }) : assert(message != null || child != null,
+            'Either message or child must be provided.');
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment:
-          isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        if (!isSender) CircleAvatar(backgroundImage: NetworkImage(avatarUrl)),
-        Flexible(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isSender ? Colors.blueAccent : Colors.grey.shade200,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-                bottomLeft: isSender ? Radius.circular(12) : Radius.zero,
-                bottomRight: isSender ? Radius.zero : Radius.circular(12),
-              ),
+    final bgColor =
+        isSender ? Theme.of(context).primaryColor : Colors.grey[300];
+    final textColor = isSender ? Colors.white : Colors.black87;
+    final radius = Radius.circular(12);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      child: Row(
+        mainAxisAlignment:
+            isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isSender) ...[
+            CircleAvatar(
+              backgroundImage: NetworkImage(avatarUrl),
+              radius: 16,
             ),
-            child: Text(
-              message,
-              style: TextStyle(color: isSender ? Colors.white : Colors.black87),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.7),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: radius,
+                  topRight: radius,
+                  bottomLeft: isSender ? radius : Radius.zero,
+                  bottomRight: isSender ? Radius.zero : radius,
+                ),
+              ),
+              child: child ??
+                  SelectableText(
+                    message!,
+                    style: TextStyle(color: textColor, fontSize: 15),
+                  ),
+              // --- MODIFICATION END ---
             ),
           ),
-        ),
-        if (isSender) CircleAvatar(backgroundImage: NetworkImage(avatarUrl)),
-      ],
+          if (isSender) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              backgroundImage: NetworkImage(avatarUrl),
+              radius: 16,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

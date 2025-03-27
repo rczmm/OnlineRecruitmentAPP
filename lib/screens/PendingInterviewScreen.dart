@@ -90,7 +90,7 @@ class PendingInterviewScreen extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) => ChatScreen(
                                       peerName: interview['company']!,
-                                      id: 'interview_${index + 1}',
+                                      peerId: 'interview_${index + 1}',
                                     ),
                                   ),
                                 );

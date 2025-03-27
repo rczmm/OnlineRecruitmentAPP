@@ -311,7 +311,6 @@ class _ChatScreenContentState extends State<ChatScreenContent>
 
     if (_filteredChatList.isEmpty && _searchController.text.isNotEmpty) {
       return Center(
-        /* Empty state for search results */
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -345,20 +344,16 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
                       peerName: chat.name,
-                      id: chat.id,
-                      // Pass avatarUrl if ChatScreen uses it
-                      // avatarUrl: chat.avatarUrl,
+                      peerId: chat.id,
                     ),
                   ),
                 );
               },
-              // Use the updated ChatItem widget below
               child: ChatItem(
                 name: chat.name,
                 message: chat.lastMessage,
                 time: chat.lastMessageTime,
                 avatarUrl: chat.avatarUrl, // Pass avatarUrl
-                // unreadCount is removed as it's not in your Chat model
               ),
             ),
             if (index < _filteredChatList.length - 1)
@@ -370,7 +365,7 @@ class _ChatScreenContentState extends State<ChatScreenContent>
   }
 
   Widget _buildInteractionTabContent() {
-    // Using the same dummy data structure as before for this example
+
     final List<FlSpot> viewData1 = const [
       FlSpot(0, 3),
       FlSpot(1, 1),

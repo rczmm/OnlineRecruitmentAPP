@@ -337,7 +337,7 @@ class JobDetailScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          ChatScreen(peerName: job.hrName, id: job.id),
+                          ChatScreen(peerName: job.hrName, peerId: job.id),
                     ),
                   );
                 },
