@@ -19,7 +19,6 @@ class _MainScreenState extends State<MainScreen> {
     ProfileScreen(),
   ];
 
-  // (Optional) Titles corresponding to each screen
   static const List<String> _screenTitles = <String>[
     '首页',
     '聊天',
@@ -34,39 +33,32 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Get theme data
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        // title: Text(_screenTitles[_selectedIndex]), // Dynamic title
         title: Text(_screenTitles[_selectedIndex],
-            style: theme.appBarTheme.titleTextStyle), // Use theme style
+            style: theme.appBarTheme.titleTextStyle),
         centerTitle: true,
-        // backgroundColor: theme.colorScheme.primary, // Use theme color
-        // elevation: theme.appBarTheme.elevation ?? 2, // Use theme elevation
-        // No need to set foregroundColor if using theme's appBarTheme correctly
+        backgroundColor: theme.colorScheme.primary,
+        elevation: theme.appBarTheme.elevation ?? 2,
       ),
-      // Use IndexedStack to preserve state of tabs
       body: IndexedStack(
         index: _selectedIndex,
         children: _screenOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        // Use theme colors
         selectedItemColor: theme.colorScheme.primary,
         unselectedItemColor: theme.unselectedWidgetColor,
-        // Or Colors.grey
-        // backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ?? Colors.white,
-        // elevation: theme.bottomNavigationBarTheme.elevation ?? 10,
+        backgroundColor:
+            theme.bottomNavigationBarTheme.backgroundColor ?? Colors.white,
+        elevation: theme.bottomNavigationBarTheme.elevation ?? 10,
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
-        // Keep fixed if you always want labels visible
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            // Consider outlined icons for unselected
             activeIcon: Icon(Icons.home),
-            // Filled icon for selected
             label: '首页',
           ),
           BottomNavigationBarItem(
