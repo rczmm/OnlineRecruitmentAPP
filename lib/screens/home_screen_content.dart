@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
-import 'job_list_container.dart';
+import 'job_list_container.dart'; // Make sure this path is correct
 import 'package:dio/dio.dart';
-import 'package:zhaopingapp/services/dio_client.dart';
+import 'package:zhaopingapp/services/dio_client.dart'; // Make sure this path is correct
 
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
@@ -12,14 +12,24 @@ class HomeScreenContent extends StatefulWidget {
 }
 
 class _HomeScreenContentState extends State<HomeScreenContent> {
-  int _page = 1;
-  final int _pageSize = 10; // 设置每页加载的数据量
-  final List<Job> _allJobs = [];
-  String _currentType = ''; // 保存当前选中的关键词
-  String _currentTag = '';
-  CancelToken? _cancelToken;
+  // Remove state variables managed by JobListView
+  // int _page = 1; // Managed by JobListView
+  // final List<Job> _allJobs = []; // Managed by JobListView
+  // String _currentType = ''; // Passed as argument
+  // String _currentTag = ''; // Passed as argument
+
+  final int _pageSize = 10; // Keep page size configuration here
+  CancelToken? _cancelToken; // Keep cancel token logic
+
+  @override
+  void dispose() {
+    _cancelPreviousRequest(); // Cancel any ongoing request when the widget is disposed
+    super.dispose();
+  }
 
   void _showErrorDialog(String message) {
+    // Check if the widget is still mounted before showing a dialog
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) {
@@ -39,99 +49,104 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  Future<List<Job>> _loadMoreJobs(String? type, String? tag) async {
+  // --- Updated _loadMoreJobs ---
+  // Now accepts the page number from JobListView
+  Future<List<Job>> _loadMoreJobs(String? type, String? tag, int page) async {
+    _cancelPreviousRequest(); // Cancel any previous request before starting a new one
+    _cancelToken = CancelToken();
+
+    // Use the passed 'page' argument directly
+    debugPrint('Loading jobs - Type: $type, Tag: $tag, Page: $page');
+
     try {
-      // 如果type或tag发生变化，重置页码
-      if ((type != null && type != _currentType) ||
-          (tag != null && tag != _currentTag)) {
-        _cancelPreviousRequest();
-        _page = 1;
-        _allJobs.clear();
-        _currentType = type ?? _currentType;
-        _currentTag = tag ?? _currentTag;
-      }
-
-      _cancelToken = CancelToken();
-
       final response = await dio.post(
-        "job/list",
+        "job/list", // Ensure this endpoint is correct
         data: {
-          "keyword": "",
-          "tag": tag ?? _currentTag,
-          "type": type ?? _currentType,
-          "pageNum": _page,
+          "keyword": "", // Assuming keyword is handled elsewhere (e.g., search screen)
+          "tag": tag ?? "", // Use provided tag or default
+          "type": type ?? "", // Use provided type or default
+          "pageNum": page, // Use the page number passed by JobListView
           "pageSize": _pageSize,
         },
         cancelToken: _cancelToken,
       );
 
+      _cancelToken = null; // Clear token after request completes or fails
+
       if (response.statusCode == 200 && response.data['code'] == 200) {
-        final List<dynamic> jobList = response.data['data']['records'];
+        final List<dynamic> jobList = response.data['data']?['records'] ?? [];
         final List<Job> newJobs =
-            jobList.map((json) => Job.fromJson(json)).toList();
-        setState(() {
-          _allJobs.addAll(newJobs);
-          if (newJobs.isNotEmpty) {
-            _page++;
-          }
-        });
+        jobList.map((json) => Job.fromJson(json)).toList();
+        // DO NOT call setState here to update _allJobs or _page
+        // Just return the fetched jobs for the current page
+        debugPrint('Loaded ${newJobs.length} jobs for page $page');
         return newJobs;
       } else {
-        // 可以返回一个空列表或者抛出异常，根据你的错误处理策略来决定
-        _showErrorDialog('请检查你的网络连接并重试。');
-        return [];
+        // Handle API error response
+        final errorMsg = response.data?['message'] ?? 'Failed to load jobs';
+        _showErrorDialog('API Error: $errorMsg');
+        return []; // Return empty list on failure
       }
     } on DioException catch (e) {
+      _cancelToken = null; // Clear token on error
       if (e.type == DioExceptionType.cancel) {
-        // 请求被取消，不需要处理
-        return [];
-      } else if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        // 处理超时异常，例如显示错误消息
-        _showErrorDialog('网络连接超时，请检查你的网络连接并重试。');
-        return [];
-      } else if (e.type == DioExceptionType.badResponse) {
-        // 处理响应错误，例如服务器返回错误码
-        _showErrorDialog('服务器错误，请稍后重试。');
-        return [];
+        debugPrint('Request cancelled: Type: $type, Tag: $tag, Page: $page');
+        return []; // Request was cancelled, return empty list
       } else {
-        // 处理 Dio 异常，例如网络连接错误
-        _showErrorDialog('请检查你的网络连接并重试。');
-        return [];
+        // Handle other Dio errors
+        String errorMessage;
+        switch (e.type) {
+          case DioExceptionType.connectionTimeout:
+          case DioExceptionType.receiveTimeout:
+          case DioExceptionType.sendTimeout:
+            errorMessage = '网络连接超时，请检查你的网络连接并重试。';
+            break;
+          case DioExceptionType.badResponse:
+            errorMessage = '服务器错误 (${e.response?.statusCode})，请稍后重试。';
+            break;
+          case DioExceptionType.connectionError:
+            errorMessage = '网络连接错误，请检查你的网络设置。';
+            break;
+          default:
+            errorMessage = '网络请求失败，请重试。';
+        }
+        debugPrint('DioError loading page $page: $e');
+        _showErrorDialog(errorMessage);
+        return []; // Return empty list on failure
       }
     } catch (e) {
-      _showErrorDialog('发生错误：$e');
-      return [];
+      _cancelToken = null; // Clear token on error
+      debugPrint('Error loading page $page: $e');
+      _showErrorDialog('发生意外错误：$e');
+      return []; // Return empty list on failure
     }
   }
 
-  // 添加一个方法来取消之前的请求
+  // --- Updated _refreshJobs ---
+  // This function is called by JobListView's RefreshIndicator
+  // It should fetch the *first* page of data.
+  Future<List<Job>> _refreshJobs(String? type, String? tag) async {
+    // No need to manage state like _page or _allJobs here.
+    // Just call _loadMoreJobs with page = 1.
+    // Cancellation is handled within _loadMoreJobs.
+    debugPrint('Refreshing jobs - Type: $type, Tag: $tag');
+    return await _loadMoreJobs(type, tag, 1); // Always load page 1 on refresh
+  }
+
+  // Method to cancel the previous request
   void _cancelPreviousRequest() {
     if (_cancelToken != null && !_cancelToken!.isCancelled) {
-      _cancelToken!.cancel('用户取消了之前的请求');
-      _cancelToken = null; // 重置 CancelToken
+      _cancelToken!.cancel('New request started');
+      debugPrint('Previous request cancelled.');
     }
-  }
-
-  // 添加这个方法来处理下拉刷新
-  Future<List<Job>> _refreshJobs(String? type, String? tag) async {
-    setState(() {
-      _cancelPreviousRequest(); // 取消之前的请求
-      _page = 1;
-      _allJobs.clear();
-      if (type != null) {
-        _currentTag = tag!;
-        _currentType = type;
-      }
-    });
-    return await _loadMoreJobs(type, tag);
+    _cancelToken = null; // Ensure token is nullified after cancellation attempt
   }
 
   @override
   Widget build(BuildContext context) {
+    // Pass the updated functions to JobListContainer
     return JobListContainer(
-      onLoadMore: _loadMoreJobs,
+      onLoadMore: _loadMoreJobs, // Now matches the expected signature
       onRefresh: _refreshJobs,
     );
   }
