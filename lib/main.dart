@@ -9,16 +9,14 @@ final storageService = StorageService();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   String? initialToken = await storageService.getAuthToken();
-  final String initialRoute =
-      (initialToken != null && initialToken.isNotEmpty) // 增加非空判断
-          ? RouteNames.home
-          : RouteNames.auth;
-  // 3. 运行 App，传入初始路由名称
+  final String initialRoute = (initialToken != null && initialToken.isNotEmpty)
+      ? RouteNames.home
+      : RouteNames.auth;
   runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute; // 接收初始路由名称
+  final String initialRoute;
 
   const MyApp({super.key, required this.initialRoute});
 
@@ -32,7 +30,6 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       // 设置初始路由
       onGenerateRoute: AppRouter.generateRoute, // 指定路由生成函数
-      // home: ..., // 当使用 initialRoute 时，不应再设置 home
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zhaopingapp/features/shell/presentation/screens/main_screen.dart';
 
 import 'home_page.dart';
 
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MyHomePage()),
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       }
     });
