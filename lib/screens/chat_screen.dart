@@ -10,6 +10,7 @@ import 'package:fl_chart/fl_chart.dart'
         LineChart,
         LineChartBarData,
         LineChartData;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../ChatScreen.dart';
 import '../common_phrases_page.dart';
@@ -166,12 +167,15 @@ class _ChatScreenContentState extends State<ChatScreenContent>
                   leading: const Icon(Icons.format_quote_outlined),
                   title: const Text("常用语设置"),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
+                  onTap: () async {
+                    final String? userId = await FlutterSecureStorage().read(key: 'userId');
                     Navigator.pop(context);
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const CommonPhrasesPage()));
+                            builder: (context) => CommonPhrasesPage(
+                                  userId: userId,
+                                )));
                   },
                 ),
                 const SizedBox(height: 24),
@@ -365,7 +369,6 @@ class _ChatScreenContentState extends State<ChatScreenContent>
   }
 
   Widget _buildInteractionTabContent() {
-
     final List<FlSpot> viewData1 = const [
       FlSpot(0, 3),
       FlSpot(1, 1),
