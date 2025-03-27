@@ -146,7 +146,7 @@ packages:
     source: hosted
     version: "0.9.3+4"
   fl_chart:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: fl_chart
       sha256: c1e26c7e48496be85104c16c040950b0436674cdf0737f3f6e95511b2529b592
