@@ -16,7 +16,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  List<Job> _searchResults = [];
+  final List<Job> _searchResults = [];
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
@@ -163,8 +163,9 @@ class _SearchScreenState extends State<SearchScreen> {
         _isLoading = false;
         _error = errorMessage;
         _initialSearchDone = true; // Mark attempt as done even on error
-        if (page == 1)
+        if (page == 1) {
           _searchResults.clear(); // Clear results on initial search error
+        }
       });
     } catch (e) {
       _cancelToken = null; // Clear token on error
