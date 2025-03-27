@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart'; // Import DioException and CancelToken
 import 'package:flutter/material.dart';
 import '../models/job.dart';
-import '../services/dio_client.dart'; // Assuming dio is configured here
+import '../core/network/dio_client.dart'; // Assuming dio is configured here
 import '../widgets/job_card.dart';
 
 class SearchScreen extends StatefulWidget {

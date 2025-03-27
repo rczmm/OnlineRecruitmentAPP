@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:zhaopingapp/services/dio_client.dart';
+import 'package:zhaopingapp/core/network/dio_client.dart';
 
 enum SnackBarType { success, error, info }
 

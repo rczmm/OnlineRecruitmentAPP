@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:zhaopingapp/services/dio_client.dart'; // Assuming dio is configured here
+import 'package:zhaopingapp/core/network/dio_client.dart'; // Assuming dio is configured here
 
 import '../models/job.dart';
 import '../widgets/job_card.dart';

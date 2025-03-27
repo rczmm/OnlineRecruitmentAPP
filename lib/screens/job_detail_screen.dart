@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import '../ChatScreen.dart';
-import '../services/dio_client.dart';
+import '../core/network/dio_client.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;

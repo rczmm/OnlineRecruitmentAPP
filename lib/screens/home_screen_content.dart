@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/job.dart';
 import 'job_list_container.dart'; // Make sure this path is correct
 import 'package:dio/dio.dart';
-import 'package:zhaopingapp/services/dio_client.dart'; // Make sure this path is correct
+import 'package:zhaopingapp/core/network/dio_client.dart'; // Make sure this path is correct
 
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});

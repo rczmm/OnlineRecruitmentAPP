@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:zhaopingapp/services/dio_client.dart';
+import 'package:zhaopingapp/core/network/dio_client.dart';
 
 import '../widgets/chat_bubble.dart';
 import 'common_phrases_page.dart';

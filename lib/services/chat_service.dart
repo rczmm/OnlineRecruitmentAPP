@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../models/chat.dart';
-import '../services/dio_client.dart';
+import '../core/network/dio_client.dart';
 
 class ChatService {
   final Dio _dio = dio;
