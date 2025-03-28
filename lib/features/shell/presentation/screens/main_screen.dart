@@ -13,6 +13,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+
+
   static const List<Widget> _screenOptions = <Widget>[
     HomeScreen(),
     ChatScreenContent(),
@@ -42,6 +44,7 @@ class _MainScreenState extends State<MainScreen> {
         centerTitle: true,
         backgroundColor: theme.colorScheme.primary,
         elevation: theme.appBarTheme.elevation ?? 2,
+        automaticallyImplyLeading: false,
       ),
       body: IndexedStack(
         index: _selectedIndex,
