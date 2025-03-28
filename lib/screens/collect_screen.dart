@@ -57,6 +57,7 @@ class _CollectScreenState extends State<CollectScreen> {
       tags: ['Flutter', '移动端开发', '高薪'],
       status: '待查看',
       date: '2024-01-15',
+      hrUserId: '1001',
       hrName: "张女士",
       workExperience: "3年",
       education: "本科",

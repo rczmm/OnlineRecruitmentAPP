@@ -6,6 +6,7 @@ class Job {
   final String companySize;
   final String companyLogo;
   final List<String> tags;
+  final String hrUserId;
   final String hrName;
   final String location;
   final String workExperience;
@@ -30,6 +31,7 @@ class Job {
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
               [],
+      hrUserId: json['hrUserId']?.toString() ?? '',
       hrName: json['hrName']?.toString() ?? '',
       location: json['location']?.toString() ?? '',
       workExperience: json['workExperience']?.toString() ?? '',
@@ -60,6 +62,7 @@ class Job {
     required this.companySize,
     this.companyLogo = '',
     required this.tags,
+    required this.hrUserId,
     required this.hrName,
     required this.location,
     required this.workExperience,

@@ -8,10 +8,12 @@ class ApplicationHistoryScreen extends StatefulWidget {
   const ApplicationHistoryScreen({super.key, this.initialTabIndex = 0});
 
   @override
-  State<ApplicationHistoryScreen> createState() => _ApplicationHistoryScreenState();
+  State<ApplicationHistoryScreen> createState() =>
+      _ApplicationHistoryScreenState();
 }
 
-class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> with SingleTickerProviderStateMixin {
+class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   // 模拟数据
@@ -28,6 +30,7 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       tags: ['Flutter', '移动端开发', '高薪'],
       status: '待查看',
       date: '2024-01-15',
+      hrUserId: '1001',
       hrName: "张女士",
       workExperience: "3年",
       education: "本科",
@@ -46,7 +49,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       tags: ['Flutter', '移动端开发'],
       status: '已查看',
       date: '2024-01-14',
-         hrName: "张女士",
+      hrUserId: '1001',
+      hrName: "张女士",
       workExperience: "3年",
       education: "本科",
       benefits: ["五险一金", "带薪年假", "节日福利"],
@@ -67,6 +71,7 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       tags: ['Flutter', '架构设计', '高薪'],
       status: '待回复',
       date: '2024-01-16',
+      hrUserId: '1001',
       hrName: '李经理',
       workExperience: '5年',
       education: '本科',
@@ -85,6 +90,7 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
       tags: ['Flutter', 'Android', 'iOS'],
       status: '已回复',
       date: '2024-01-13',
+      hrUserId: '1001',
       hrName: '王HR',
       workExperience: '3年',
       education: '本科',
@@ -141,7 +147,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
                       Text(
                         job.status,
                         style: TextStyle(
-                          color: job.status == '已查看' ? Colors.blue : Colors.grey,
+                          color:
+                              job.status == '已查看' ? Colors.blue : Colors.grey,
                         ),
                       ),
                     ],
@@ -176,7 +183,8 @@ class _ApplicationHistoryScreenState extends State<ApplicationHistoryScreen> wit
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.green[100],
                               borderRadius: BorderRadius.circular(10),
