@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
-import '../models/chat.dart';
-import '../core/network/dio_client.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:zhaopingapp/core/network/dio_client.dart';
+import 'package:zhaopingapp/models/chat.dart';
 
 class ChatService {
   final Dio _dio = dio;
@@ -8,20 +10,21 @@ class ChatService {
   // 获取聊天列表
   Future<List<Chat>> getChatList() async {
     try {
+      final String? userId = await FlutterSecureStorage().read(key: 'userId');
+
       // 发起网络请求获取聊天列表
-      final response = await _dio.get('/api/chats');
-      
+      final response =
+          await _dio.get('/chat/list', queryParameters: {'userId': userId});
+
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
         return data.map((json) => Chat.fromJson(json)).toList();
       } else {
-        // 请求成功但状态码不是200
-        print('获取聊天列表失败: ${response.statusCode}');
+        debugPrint('获取聊天列表失败: ${response.statusCode}');
         return _getDefaultChatList();
       }
     } catch (e) {
-      // 请求失败，返回默认聊天列表
-      print('获取聊天列表异常: $e');
+      debugPrint('获取聊天列表异常: $e');
       return _getDefaultChatList();
     }
   }
@@ -31,7 +34,7 @@ class ChatService {
     return [
       Chat(
         id: '1101',
-        name: '小凤神',
+        name: '用户A',
         lastMessage: '圣诞快乐！',
         avatarUrl: 'https://example.com/avatar1.jpg',
         lastMessageTime: DateTime.now().subtract(const Duration(days: 2)),

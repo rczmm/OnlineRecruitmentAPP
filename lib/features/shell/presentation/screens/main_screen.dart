@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/features/home/presentation/screens/home_screen.dart';
-import 'package:zhaopingapp/features/chat/presentation/screens/chat_screen.dart';
 import 'package:zhaopingapp/features/profile/presentation/screens/profile_screen.dart';
+import 'package:zhaopingapp/features/chat/presentation/screens/chat_screen_content.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
