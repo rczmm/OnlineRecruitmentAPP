@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/ChatScreen.dart';
 import 'package:zhaopingapp/core/services/AuthService.dart';
+import 'package:zhaopingapp/features/chat/presentation/screens/chat_screen.dart';
 import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 import 'package:zhaopingapp/services/job_service.dart';
 import 'package:zhaopingapp/services/chat_service.dart';

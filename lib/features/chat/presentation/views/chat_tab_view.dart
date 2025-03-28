@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/ChatScreen.dart';
+import 'package:zhaopingapp/features/chat/presentation/screens/chat_screen.dart';
 import 'package:zhaopingapp/models/chat.dart';
 import 'package:zhaopingapp/services/chat_service.dart';
 import '../widgets/chat_item.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
-import '../ChatScreen.dart';
 import '../core/network/dio_client.dart';
+import '../features/chat/presentation/screens/chat_screen.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;

@@ -143,7 +143,6 @@ class _ChatScreenContentState extends State<ChatScreenContent>
             ],
           ),
         ),
-        // Tab Content Area
         Expanded(
           child: TabBarView(
             controller: _tabController,
