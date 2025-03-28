@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/ChatScreen.dart';
+import 'package:zhaopingapp/core/services/AuthService.dart';
 import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 import 'package:zhaopingapp/services/job_service.dart';
+import 'package:zhaopingapp/services/chat_service.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final Job job;
@@ -15,7 +17,11 @@ class JobDetailScreen extends StatefulWidget {
 class _JobDetailScreenState extends State<JobDetailScreen> {
   late bool _isFavorite;
   bool _isTogglingFavorite = false;
+  bool _isInitiatingChat = false;
+
   final JobService _jobService = JobService();
+  final ChatService _chatService = ChatService();
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -23,7 +29,68 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     _isFavorite = widget.job.isFavorite;
   }
 
-  // --- Actions ---
+  Future<void> _handleInitiateChat() async {
+    if (_isInitiatingChat) return;
+
+    setState(() {
+      _isInitiatingChat = true;
+    });
+
+    final String? senderId = await _authService.getCurrentUserId();
+    if (senderId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('无法获取您的用户信息，请重新登录'), backgroundColor: Colors.red),
+      );
+      setState(() {
+        _isInitiatingChat = false;
+      });
+      return;
+    }
+
+    final String receiverId = widget.job.hrUserId;
+    if (receiverId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('无法获取招聘者信息'), backgroundColor: Colors.red),
+      );
+      setState(() {
+        _isInitiatingChat = false;
+      });
+      return;
+    }
+
+    final success = await _chatService.initiateChat(
+      senderId: senderId,
+      receiverId: receiverId,
+      jobId: widget.job.id,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(
+            peerName: widget.job.hrName,
+            peerId: receiverId,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('发起沟通失败，请稍后重试'), backgroundColor: Colors.red),
+      );
+    }
+
+    setState(() {
+      _isInitiatingChat = false;
+    });
+  }
+
   Future<void> _toggleFavorite() async {
     if (_isTogglingFavorite) return; // Prevent multiple taps
 
@@ -190,18 +257,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 const SizedBox(height: 24),
                 _buildSectionTitle('招聘者信息', textTheme),
                 _buildHrInfo(theme, textTheme),
-                // Removed SizedBox(height: 80) - handled by SingleChildScrollView padding
               ],
             ),
           ),
-          // Bottom fixed communication button
           _buildBottomCommunicateButton(context, theme, colorScheme),
         ],
       ),
     );
   }
-
-  // --- Private Build Helper Methods ---
 
   Widget _buildHeader(TextTheme textTheme, ColorScheme colorScheme) {
     return Row(
@@ -232,7 +295,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+        color: theme.colorScheme.primaryContainer.withAlpha(15),
         // Use theme color
         borderRadius: BorderRadius.circular(12),
       ),
@@ -396,7 +459,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildHrInfo(ThemeData theme, TextTheme textTheme) {
-    // TODO: Use actual HR avatar if available
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: theme.colorScheme.secondaryContainer,
@@ -406,9 +468,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       title: Text(widget.job.hrName, style: textTheme.titleMedium),
       subtitle: Text('在线',
           style: textTheme.bodyMedium?.copyWith(color: Colors.green)),
-      // Example status
-      contentPadding: EdgeInsets.zero, // Remove default padding
-      // Optional: Add trailing chat icon if not using bottom button
+      contentPadding: EdgeInsets.zero,
     );
   }
 
@@ -424,56 +484,59 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             right: 16.0,
             top: 12.0,
             bottom: MediaQuery.of(context).padding.bottom +
-                12.0), // Add safe area padding
+                12.0),
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor, // Match scaffold background
+          color: theme.scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08), // Softer shadow
+              color: Colors.black.withOpacity(0.08),
               spreadRadius: 0,
               blurRadius: 10,
               offset: const Offset(0, -3),
             ),
           ],
-          // Optional: Add top border
-          // border: Border(top: BorderSide(color: theme.dividerColor, width: 0.5)),
         ),
         child: ElevatedButton.icon(
           onPressed: () {
-            // TODO: Ensure peerId is correct (might be HR's user ID, not job ID)
-            // You might need to fetch the HR's user ID based on job.hrName or an hrId field in the Job model
-            String peerIdForChat = widget.job.id; // Placeholder - **FIX THIS**
-            debugPrint(
-                "Attempting to chat with HR: ${widget.job.hrName}, using Peer ID: $peerIdForChat");
-
+            String peerIdForChat = widget.job.id;
+            _isInitiatingChat ? null : _handleInitiateChat();
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ChatScreen(
                   peerName: widget.job.hrName,
-                  peerId: peerIdForChat, // **PASS THE CORRECT HR USER ID HERE**
+                  peerId: peerIdForChat,
                 ),
               ),
             );
           },
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            // Slightly larger button
             backgroundColor: colorScheme.primary,
-            // Use theme color
             foregroundColor: colorScheme.onPrimary,
-            // Use theme color
             elevation: 2,
-            // Reduced elevation
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          icon: Icon(Icons.chat_bubble_outline, color: colorScheme.onPrimary),
+          icon: _isInitiatingChat
+              ? Container(
+                  // Show loading indicator inside button
+                  width: 20,
+                  height: 20,
+                  margin:
+                      const EdgeInsets.only(right: 8), // Add spacing like icon
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colorScheme.onPrimary,
+                  ),
+                )
+              : Icon(Icons.chat_bubble_outline, color: colorScheme.onPrimary),
           // Use outlined icon
           label: Text(
-            '立即沟通',
+            _isInitiatingChat ? '请稍候...' : '立即沟通',
+            // Change text while loading
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onPrimary,
