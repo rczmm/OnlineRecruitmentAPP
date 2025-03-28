@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ChatMessageModel {
   final String id;
@@ -33,9 +34,23 @@ class ChatMessageModel {
       String peerAvatar) {
     final senderId = json['senderId']?.toString() ?? 'unknown';
     final isMe = senderId == currentUserId;
-    final timestamp = json['timestamp'] != null
-        ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
-        : DateTime.now();
+    DateTime timestamp;
+    if (json['timestamp'] != null) {
+      try {
+        // Use DateFormat to parse the specific string format
+        timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").parse(
+            json['timestamp'].toString(),
+            true); // Use true for UTC if applicable, false otherwise
+        debugPrint(
+            "Parsed timestamp ${json['timestamp']} successfully: $timestamp"); // Add log
+      } catch (e) {
+        debugPrint(
+            "!!! ERROR parsing timestamp '${json['timestamp']}': $e"); // Log error
+        timestamp = DateTime.now(); // Fallback
+      }
+    } else {
+      timestamp = DateTime.now(); // Fallback if timestamp is missing
+    }
 
     return ChatMessageModel(
       id: json['id']?.toString() ?? UniqueKey().toString(),

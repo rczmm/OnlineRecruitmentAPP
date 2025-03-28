@@ -4,6 +4,9 @@ class Chat {
   final String lastMessage;
   final String avatarUrl;
   final DateTime lastMessageTime;
+  final String senderId;
+  final String recipientId;
+
 
   Chat({
     required this.id,
@@ -11,6 +14,8 @@ class Chat {
     required this.lastMessage,
     this.avatarUrl = '',
     required this.lastMessageTime,
+    required this.senderId,
+    required this.recipientId,
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) {
@@ -22,6 +27,8 @@ class Chat {
       lastMessageTime: json['lastMessageTime'] != null
           ? DateTime.parse(json['lastMessageTime'])
           : DateTime.now(),
+      senderId: json['senderId'] ?? '',
+      recipientId: json['recipientId'] ?? '',
     );
   }
 

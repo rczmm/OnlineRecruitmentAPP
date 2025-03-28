@@ -84,4 +84,48 @@ class ApiService {
       throw Exception("加载常用语时发生未知错误");
     }
   }
+
+  Future<List<Map<String, dynamic>>> fetchChatHistory({
+    required String sendId,
+    required String receiveId,
+    int limit = 50,
+    String? beforeTimestamp,
+  }) async {
+    final url = '/chat/history';
+
+    final queryParameters = <String, dynamic>{
+      'limit': limit,
+      'sendId': sendId,
+      'receiveId': receiveId,
+    };
+    if (beforeTimestamp != null) {
+      queryParameters['before'] = beforeTimestamp;
+    }
+
+    try {
+      final options = await _getAuthOptions();
+      final response = await _dio.get(
+        url,
+        queryParameters: queryParameters,
+        options: options,
+      );
+
+      if (response.statusCode == 200 && response.data['data'] is List) {
+        List<Map<String, dynamic>> historyData = List<Map<String, dynamic>>.from((response.data['data'] as List)
+                .whereType<Map<String, dynamic>>());
+        debugPrint("Fetched ${historyData.length} historical messages.");
+        return historyData;
+      } else {
+        debugPrint(
+            "Failed to load history, status: ${response.statusCode}, data: ${response.data}");
+        throw Exception("无法加载聊天记录 (错误码: ${response.statusCode})");
+      }
+    } on DioException catch (e) {
+      debugPrint("DioError fetching history: $e");
+      throw Exception("加载聊天记录失败: ${e.message}");
+    } catch (e) {
+      debugPrint("Error fetching history: $e");
+      throw Exception("加载聊天记录时发生未知错误");
+    }
+  }
 }

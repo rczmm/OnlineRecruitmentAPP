@@ -32,29 +32,7 @@ class ChatService {
 
   // 获取默认聊天列表
   List<Chat> _getDefaultChatList() {
-    return [
-      Chat(
-        id: '1101',
-        name: '用户A',
-        lastMessage: '圣诞快乐！',
-        avatarUrl: 'https://example.com/avatar1.jpg',
-        lastMessageTime: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Chat(
-        id: '111',
-        name: '用户B',
-        lastMessage: '最近怎么样？',
-        avatarUrl: 'https://example.com/avatar2.jpg',
-        lastMessageTime: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      Chat(
-        id: '123456',
-        name: '用户C',
-        lastMessage: '好久不见！',
-        avatarUrl: 'https://example.com/avatar3.jpg',
-        lastMessageTime: DateTime.now().subtract(const Duration(days: 7)),
-      ),
-    ];
+    return [];
   }
 
   Future<bool> initiateChat({

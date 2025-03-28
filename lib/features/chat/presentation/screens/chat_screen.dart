@@ -31,10 +31,11 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessageModel> _messages = [];
   List<UserFile> _userFiles = [];
   bool _isLoadingFiles = false;
+  bool _isLoadingHistory = true;
 
   String _myUserId = "unknown_user";
   final String _myAvatarUrl =
-      "https://via.placeholder.com/150/0000FF/FFFFFF?text=Me"; // Replace with actual
+      "https://i0.hdslb.com/bfs/archive/aa77ca3d1f12e590d8458274868e13f21d620865.jpg"; // Replace with actual
   late String _peerAvatarUrl;
   ConnectionStatus _connectionStatus = ConnectionStatus.disconnected;
 
@@ -50,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _peerAvatarUrl = widget.peerAvatarUrl ??
-        "https://via.placeholder.com/150/FF0000/FFFFFF?text=Peer"; // Default Peer Avatar
+        "https://via.placeholder.com/150/FF0000/FFFFFF?text=Peer";
     _setupListeners();
     _initializeChat();
   }
@@ -68,6 +69,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeChat() async {
+    setState(() {
+      _isLoadingHistory = true; // Start loading history
+      _connectionStatus =
+          ConnectionStatus.connecting; // Show connecting status early
+    });
+
     try {
       String? storedUserId = await _storage.read(key: 'userId');
       String? authToken = await _storage.read(key: 'authToken');
@@ -76,6 +83,10 @@ class _ChatScreenState extends State<ChatScreen> {
         debugPrint('Warning: userId not found. Using default.');
         _myUserId = "guest_${DateTime.now().millisecondsSinceEpoch}";
         if (mounted) SnackbarUtil.showError(context, "无法加载用户信息");
+        setState(() {
+          _isLoadingHistory = false;
+          _connectionStatus = ConnectionStatus.error;
+        });
         return;
       } else {
         _myUserId = storedUserId;
@@ -83,6 +94,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       debugPrint('My User ID: $_myUserId');
       debugPrint('Connecting to chat with Peer ID: ${widget.peerId}');
+
+      await _loadHistory();
 
       _chatService.connect(
         userId: _myUserId,
@@ -96,21 +109,17 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrint("Error reading from secure storage or connecting: $e");
       if (mounted) SnackbarUtil.showError(context, "初始化聊天失败: $e");
       setState(() {
+        _isLoadingHistory = false;
         _connectionStatus = ConnectionStatus.error;
       });
     }
   }
 
   void _onMessageReceived(ChatMessageModel message) {
-    // Ensure messages are added only once and list is updated
     if (mounted && !_messages.any((m) => m.id == message.id)) {
-      // Check for duplicate IDs if provided
       setState(() {
         _messages.add(message);
-        // Optionally sort messages by timestamp if order isn't guaranteed
-        // _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
       });
-      // Scrolling is handled by MessageListView's didUpdateWidget
     }
   }
 
@@ -119,17 +128,13 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _connectionStatus = status;
       });
-      // Show feedback based on status
       switch (status) {
         case ConnectionStatus.connecting:
-          // SnackbarUtil.showInfo(context, "连接中...", showProgress: true, duration: Duration(minutes: 1));
           break;
         case ConnectionStatus.connected:
           SnackbarUtil.showSuccess(context, "已连接");
           break;
         case ConnectionStatus.disconnected:
-          // Might be intentional, don't show error unless it was unexpected
-          // SnackbarUtil.showInfo(context, "已断开连接");
           break;
         case ConnectionStatus.error:
           SnackbarUtil.showError(context, "连接错误，尝试重连中...");
@@ -139,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSendMessage(String text) {
-    final tempId = UniqueKey().toString(); // Temporary ID for optimistic update
+    final tempId = UniqueKey().toString();
     final optimisticMessage = ChatMessageModel(
       id: tempId,
       senderId: _myUserId,
@@ -150,22 +155,17 @@ class _ChatScreenState extends State<ChatScreen> {
       avatarUrl: _myAvatarUrl,
     );
 
-    // Optimistic UI update
     setState(() {
       _messages.add(optimisticMessage);
     });
-    // Scrolling handled by MessageListView
 
     try {
       _chatService.sendMessage(widget.peerId, text);
-      // Optionally: Wait for confirmation from backend to update message status (e.g., sent -> delivered)
     } catch (e) {
       debugPrint("Error sending message: $e");
       if (mounted) SnackbarUtil.showError(context, "消息发送失败");
-      // Optionally remove the optimistic message or mark it as failed
       setState(() {
         _messages.removeWhere((m) => m.id == tempId);
-        // Or: update message state to 'failed'
       });
     }
   }
@@ -176,8 +176,6 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _isLoadingFiles = true;
     });
-    // Optionally disable attach button in input bar:
-    // _chatInputBarKey.currentState?.setIsAttachmentLoading(true);
 
     try {
       final files = await _apiService.fetchUserFiles();
@@ -194,16 +192,13 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _isLoadingFiles = false;
         });
-        // _chatInputBarKey.currentState?.setIsAttachmentLoading(false);
       }
     }
   }
 
   Future<void> _handleAttachment() async {
-    // Fetch files if list is empty and not already loading
     if (_userFiles.isEmpty && !_isLoadingFiles) {
       await _fetchUserFiles();
-      // If still empty after fetching (and not loading), show message
       if (mounted && _userFiles.isEmpty && !_isLoadingFiles) {
         SnackbarUtil.showInfo(context, "没有可用的附件文件。");
         return;
@@ -213,7 +208,6 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    // If files are available, show selection dialog
     if (mounted && _userFiles.isNotEmpty) {
       _showFileSelectionDialog();
     }
@@ -227,10 +221,8 @@ class _ChatScreenState extends State<ChatScreen> {
           title: const Text('选择要发送的附件'),
           content: SizedBox(
             width: double.maxFinite,
-            height: MediaQuery.of(context).size.height *
-                0.4, // Adjust size as needed
-            child: _userFiles
-                    .isEmpty // Should not happen if called correctly, but good fallback
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: _userFiles.isEmpty
                 ? const Center(child: Text('没有找到文件。'))
                 : ListView.builder(
                     shrinkWrap: true,
@@ -241,7 +233,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         leading: const Icon(Icons.description_outlined),
                         title: Text(file.fileName),
                         onTap: () {
-                          Navigator.of(context).pop(); // Close dialog
+                          Navigator.of(context).pop();
                           _sendFileMessage(file);
                         },
                       );
@@ -303,15 +295,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     try {
-      // Fetch phrases directly here or have a dedicated provider/manager
       final phrases = await _apiService.fetchCommonPhrases(_myUserId);
 
-      if (!mounted) return; // Check if widget is still mounted after async call
+      if (!mounted) return;
 
       if (phrases.isEmpty) {
         SnackbarUtil.showInfo(context, '没有可用的常用语。');
-        // Optionally navigate to manage phrases page
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => CommonPhrasesPage()));
         return;
       }
 
@@ -360,6 +349,57 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _loadHistory() async {
+    if (_myUserId == "unknown_user") return; // Don't load if user ID is invalid
+
+    try {
+      final historyData = await _apiService.fetchChatHistory(
+          sendId: _myUserId, receiveId: widget.peerId);
+
+      final String peerName = widget.peerId;
+
+      debugPrint("History data: $peerName");
+
+      if (!mounted) return;
+
+      final List<ChatMessageModel> historyMessages = historyData.map((data) {
+        return ChatMessageModel.fromJson(
+          data,
+          _myUserId,
+          widget.peerName,
+          _myAvatarUrl,
+          _peerAvatarUrl,
+        );
+      }).toList();
+
+      setState(() {
+        // Prepend history and sort
+        _messages.insertAll(0, historyMessages);
+        _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        _isLoadingHistory = false; // History loading finished
+      });
+
+      // Jump to bottom after history is loaded and UI is updated
+      _jumpToBottom();
+    } catch (e) {
+      debugPrint("Error loading chat history: $e");
+      if (mounted) SnackbarUtil.showError(context, "加载聊天记录失败: $e");
+      setState(() {
+        _isLoadingHistory = false; // Stop loading indicator on error
+      });
+    }
+  }
+
+  void _jumpToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(
+          _scrollController.position.maxScrollExtent,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
     _messageSubscription?.cancel();
@@ -375,7 +415,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('与 ${widget.peerName} 聊天'),
-        // Optionally show connection status in AppBar
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -397,12 +436,18 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: MessageListView(
-              messages: _messages,
-              scrollController: _scrollController,
+          if (_isLoadingHistory)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(child: CircularProgressIndicator()),
             ),
-          ),
+          if (!_isLoadingHistory)
+            Expanded(
+              child: MessageListView(
+                messages: _messages,
+                scrollController: _scrollController,
+              ),
+            ),
           ChatInputBar(
             controller: _textEditingController,
             onSendMessage: _handleSendMessage,

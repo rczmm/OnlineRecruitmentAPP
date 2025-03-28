@@ -191,7 +191,7 @@ class _ChatTabViewState extends State<ChatTabView> {
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
                       peerName: chat.name,
-                      peerId: chat.id, // Ensure chat.id is the correct peer ID
+                      peerId: chat.recipientId, // Ensure chat.id is the correct peer ID
                     ),
                   ),
                 );
