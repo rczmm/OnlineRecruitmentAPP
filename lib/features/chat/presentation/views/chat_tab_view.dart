@@ -6,7 +6,6 @@ import '../widgets/chat_item.dart';
 import '../widgets/list_section_header.dart';
 
 class ChatTabView extends StatefulWidget {
-  // Inject the service
   final ChatService chatService;
 
   const ChatTabView({super.key, required this.chatService});

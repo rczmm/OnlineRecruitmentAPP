@@ -1,20 +1,15 @@
-// lib/features/interaction/presentation/views/interaction_tab_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-// --- Placeholder Model Imports (Replace with your actual paths) ---
 import 'package:zhaopingapp/models/visit_trend_point.dart';
 import 'package:zhaopingapp/models/viewer_info.dart';
-import 'package:zhaopingapp/models/job.dart'; // Updated Job model import
+import 'package:zhaopingapp/models/job.dart';
 
-// --- Placeholder Service Imports (Replace with your actual paths) ---
 import 'package:zhaopingapp/services/interaction_service.dart';
 import 'package:zhaopingapp/services/job_service.dart';
 
-// --- Placeholder Widget Imports (Replace with your actual paths) ---
-import 'package:zhaopingapp/widgets/job_card_widget.dart'; // Updated JobCardWidget import
-import 'package:zhaopingapp/features/interaction/presentation/widgets/viewer_card_widget.dart'; // Viewer card import
+import 'package:zhaopingapp/widgets/job_card_widget.dart';
+import 'package:zhaopingapp/features/interaction/presentation/widgets/viewer_card_widget.dart';
 
 class InteractionTabView extends StatefulWidget {
   const InteractionTabView({super.key});
@@ -27,12 +22,9 @@ class _InteractionTabViewState extends State<InteractionTabView>
     with TickerProviderStateMixin {
   late TabController _interactionTabController;
 
-  // --- State Variables ---
-  // Services (Inject these properly in a real app using get_it, Provider, Riverpod, etc.)
   final InteractionService _interactionService = InteractionService();
   final JobService _jobService = JobService();
 
-  // "Viewed Me" State
   bool _isTrendLoading = true;
   bool _isViewersLoading = true;
   String? _trendError;
@@ -40,13 +32,12 @@ class _InteractionTabViewState extends State<InteractionTabView>
   List<VisitTrendPoint> _trendPoints = [];
   List<ViewerInfo> _viewersList = [];
 
-  // "Recommended Jobs" State - Updated Type
   bool _isTagsLoading = true;
   bool _isJobsLoading = true;
   String? _tagsError;
   String? _jobsError;
-  List<String> _tagsList = ['全部']; // Start with '全部'
-  // Use the Job model here
+  List<String> _tagsList = ['全部'];
+
   List<Job> _recommendedJobsList = [];
   List<Job> _filteredJobsList = [];
   String _selectedTag = '全部';
@@ -55,11 +46,10 @@ class _InteractionTabViewState extends State<InteractionTabView>
   void initState() {
     super.initState();
     _interactionTabController = TabController(length: 2, vsync: this);
-    // Fetch initial data
     _fetchVisitTrend();
     _fetchViewers();
     _fetchTags();
-    _fetchRecommendedJobs(); // Fetch initial jobs (all)
+    _fetchRecommendedJobs();
   }
 
   @override
@@ -68,7 +58,6 @@ class _InteractionTabViewState extends State<InteractionTabView>
     super.dispose();
   }
 
-  // --- Data Fetching Methods ---
   Future<void> _fetchVisitTrend() async {
     if (!mounted) return;
     setState(() {
@@ -124,7 +113,6 @@ class _InteractionTabViewState extends State<InteractionTabView>
     try {
       final data = await _jobService.getRecommendationTags();
       if (!mounted) return;
-      // Ensure '全部' is present and first if needed, or handle API response
       final tags = data.contains('全部') ? data : ['全部', ...data];
       setState(() {
         _tagsList = tags;
@@ -142,7 +130,6 @@ class _InteractionTabViewState extends State<InteractionTabView>
 
   Future<void> _fetchRecommendedJobs({bool isRefresh = false}) async {
     if (!mounted) return;
-    // Only show loading indicator on initial load or explicit refresh
     if (_recommendedJobsList.isEmpty || isRefresh) {
       setState(() {
         _isJobsLoading = true;
@@ -151,13 +138,11 @@ class _InteractionTabViewState extends State<InteractionTabView>
     } else {
       setState(() {
         _jobsError = null;
-      }); // Clear error on subsequent loads
+      });
     }
 
     try {
-      // Fetch jobs based on the *currently selected* tag if API supports it
-      // Otherwise, fetch all and filter client-side
-      // Service method now returns Future<List<Job>>
+
       final data = await _jobService.getRecommendedJobs(
           tag: _selectedTag == '全部' ? null : _selectedTag);
       if (!mounted) return;
@@ -179,12 +164,10 @@ class _InteractionTabViewState extends State<InteractionTabView>
   }
 
   void _filterRecommendedJobs() {
-    // Filtering logic might need adjustment based on Job fields if doing client-side
     setState(() {
       if (_selectedTag == '全部') {
         _filteredJobsList = List.from(_recommendedJobsList);
       } else {
-        // Example client-side filter (adjust logic as needed)
         _filteredJobsList = _recommendedJobsList
             .where((job) =>
                 job.title.toLowerCase().contains(_selectedTag.toLowerCase()) ||
@@ -201,12 +184,9 @@ class _InteractionTabViewState extends State<InteractionTabView>
     setState(() {
       _selectedTag = tag;
     });
-    // Refetch data based on the new tag
     _fetchRecommendedJobs();
-    // OR if filtering client-side: _filterRecommendedJobs();
   }
 
-  // --- Build Methods ---
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -217,10 +197,6 @@ class _InteractionTabViewState extends State<InteractionTabView>
             Tab(text: '看过我的'),
             Tab(text: '推荐职位'),
           ],
-          // Optional: Customize TabBar appearance
-          // labelColor: Theme.of(context).colorScheme.primary,
-          // unselectedLabelColor: Theme.of(context).hintColor,
-          // indicatorColor: Theme.of(context).colorScheme.primary,
         ),
         Expanded(
           child: TabBarView(
@@ -235,23 +211,19 @@ class _InteractionTabViewState extends State<InteractionTabView>
     );
   }
 
-  // --- Build methods for sub-tabs ---
   Widget _buildViewedMeContent(BuildContext context) {
     return SingleChildScrollView(
-      // Use ListView for better performance if content grows
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Trend Section ---
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
             child:
                 Text("近期访问趋势", style: Theme.of(context).textTheme.titleMedium),
           ),
-          _buildTrendChart(), // Extracted chart building
+          _buildTrendChart(),
           const Divider(thickness: 6, height: 20),
 
-          // --- Viewers Section ---
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
             child: Row(
@@ -279,8 +251,8 @@ class _InteractionTabViewState extends State<InteractionTabView>
   Widget _buildRecommendedJobsContent(BuildContext context) {
     return Column(
       children: [
-        // --- Tags Section ---
-        _buildTagsSelector(), // Extracted tags building
+
+        _buildTagsSelector(),
 
         const Divider(height: 1),
 
