@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
-import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart'; // Assuming this exists
+import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart';
 
 class ApiService {
   final Dio _dio = DioClient().dio;
@@ -128,4 +128,49 @@ class ApiService {
       throw Exception("加载聊天记录时发生未知错误");
     }
   }
+
+  Future<Map<String, dynamic>> fetchUserProfile() async {
+    // --- Adjust the endpoint to your actual API endpoint ---
+    final url = '/user/profile'; // Example: /api/user/profile or /api/me
+    // -------------------------------------------------------
+
+    debugPrint("Fetching user profile from $url...");
+    try {
+      // Get options with Authorization header
+      final options = await _getAuthOptions();
+
+      // Make the GET request
+      final response = await _dio.get(url, options: options);
+
+      debugPrint("Fetch profile response status: ${response.statusCode}");
+
+      // Check for successful response and correct data type
+      if (response.statusCode == 200 && response.data['data'] is Map<String,
+      dynamic>) {
+        // Return the user data map directly
+        return response.data['data'] as Map<String, dynamic>;
+      } else {
+        // Handle unexpected status code or data format
+        debugPrint("Failed to load profile, status: ${response.statusCode}, data: ${response.data}");
+        throw Exception("无法加载用户信息 (错误码: ${response.statusCode})");
+      }
+    } on DioException catch (e) {
+      // Handle Dio-specific errors (network, timeout, status codes)
+      if (e.response?.statusCode == 401) {
+        // Specific handling for Unauthorized (e.g., token expired)
+        debugPrint("Unauthorized (401) fetching profile. Token might be invalid.");
+        throw Exception("请先登录 (401)"); // Throw specific error for login prompt
+      }
+      // General Dio error handling
+      debugPrint("DioError fetching profile: ${e.message}");
+      debugPrint("DioError response: ${e.response?.data}");
+      throw Exception("加载用户信息失败: ${e.message ?? '网络请求错误'}");
+    } catch (e) {
+      // Handle any other unexpected errors
+      debugPrint("Unexpected error fetching profile: $e");
+      throw Exception("加载用户信息时发生未知错误");
+    }
+  }
+
+
 }
