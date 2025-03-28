@@ -101,12 +101,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     final success =
         await _jobService.toggleFavorite(widget.job.id, _isFavorite);
 
-    // Check if the widget is still mounted before updating state
     if (!mounted) return;
 
     if (success) {
       setState(() {
-        _isFavorite = !_isFavorite; // Toggle local state on success
+        _isFavorite = !_isFavorite;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -134,7 +133,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        // TODO: Implement actual sharing logic for each platform
         return AlertDialog(
           title: const Text('分享职位'),
           content: const Text('将职位分享到：'), // Add content text
@@ -301,11 +299,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
       child: Row(
         children: [
-          // Use company logo if available, otherwise placeholder
           CircleAvatar(
             radius: 25,
-            backgroundColor:
-                theme.colorScheme.primaryContainer.withOpacity(0.2),
+            backgroundColor: theme.colorScheme.primaryContainer.withAlpha(30),
             backgroundImage: widget.job.companyLogo.isNotEmpty
                 ? NetworkImage(widget.job.companyLogo)
                 : null,
@@ -341,8 +337,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Widget _buildTags(ThemeData theme) {
-    if (widget.job.tags.isEmpty)
+    if (widget.job.tags.isEmpty) {
       return const SizedBox.shrink(); // Hide if no tags
+    }
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -351,22 +348,19 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     );
   }
 
-  // Reusable chip widget from previous refactoring
   Widget _buildInfoChip(BuildContext context, String text) {
     if (text.isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      // Adjusted padding
       decoration: BoxDecoration(
-        color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
-        // Use theme color
-        borderRadius: BorderRadius.circular(15), // More rounded
+        color: theme.colorScheme.secondaryContainer.withAlpha(65),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
         text,
         style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSecondaryContainer, // Use theme color
+          color: theme.colorScheme.onSecondaryContainer,
         ),
       ),
     );
@@ -374,13 +368,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
 
   Widget _buildDetailRow(IconData icon, String text, ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0), // Consistent spacing
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: theme.hintColor, size: 18), // Use theme hint color
+          Icon(icon, color: theme.hintColor, size: 18),
           const SizedBox(width: 12),
           Expanded(
-            // Allow text to wrap
             child: Text(
               text,
               style: theme.textTheme.bodyLarge,
@@ -404,7 +397,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Widget _buildDescription(TextTheme textTheme) {
     return Text(
       widget.job.description,
-      style: textTheme.bodyLarge?.copyWith(height: 1.6), // Adjust line height
+      style: textTheme.bodyLarge?.copyWith(height: 1.6),
     );
   }
 
@@ -424,7 +417,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                // Add padding to align bullet point better
                 padding: const EdgeInsets.only(top: 6.0, right: 8.0),
                 child: Icon(Icons.circle,
                     size: 6, color: Theme.of(context).hintColor),
@@ -453,7 +445,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             style: theme.textTheme.bodyLarge,
           ),
         ),
-        // Optional: Add a map icon/button here
       ],
     );
   }
@@ -483,13 +474,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             left: 16.0,
             right: 16.0,
             top: 12.0,
-            bottom: MediaQuery.of(context).padding.bottom +
-                12.0),
+            bottom: MediaQuery.of(context).padding.bottom + 12.0),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withAlpha(20), // Slightly darker shadow
               spreadRadius: 0,
               blurRadius: 10,
               offset: const Offset(0, -3),
@@ -497,23 +487,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ],
         ),
         child: ElevatedButton.icon(
-          onPressed: () {
-            String peerIdForChat = widget.job.id;
-            _isInitiatingChat ? null : _handleInitiateChat();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatScreen(
-                  peerName: widget.job.hrName,
-                  peerId: peerIdForChat,
-                ),
-              ),
-            );
-          },
+          onPressed: _isInitiatingChat ? null : _handleInitiateChat,
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
             backgroundColor: colorScheme.primary,
             foregroundColor: colorScheme.onPrimary,
+            disabledBackgroundColor: colorScheme.primary.withAlpha(75),
             elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -522,21 +501,17 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ),
           icon: _isInitiatingChat
               ? Container(
-                  // Show loading indicator inside button
                   width: 20,
                   height: 20,
-                  margin:
-                      const EdgeInsets.only(right: 8), // Add spacing like icon
+                  margin: const EdgeInsets.only(right: 8),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: colorScheme.onPrimary,
                   ),
                 )
               : Icon(Icons.chat_bubble_outline, color: colorScheme.onPrimary),
-          // Use outlined icon
           label: Text(
             _isInitiatingChat ? '请稍候...' : '立即沟通',
-            // Change text while loading
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onPrimary,

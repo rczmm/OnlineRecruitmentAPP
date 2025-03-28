@@ -7,21 +7,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
+import 'package:zhaopingapp/widgets/chat_bubble.dart';
 
-import '../widgets/chat_bubble.dart';
 import 'common_phrases_page.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String peerName; // The name of the user you are chatting with
-  final String peerId; // The user ID of the user you are chatting with
-  // Optional: Pass peer's avatar URL if available
+  final String peerName;
+  final String peerId;
   final String? peerAvatarUrl;
 
   const ChatScreen({
     super.key,
     required this.peerName,
     required this.peerId,
-    this.peerAvatarUrl, // Add peerAvatarUrl
+    this.peerAvatarUrl,
   });
 
   @override

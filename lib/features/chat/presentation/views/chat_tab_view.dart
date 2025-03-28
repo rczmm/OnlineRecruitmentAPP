@@ -97,10 +97,7 @@ class _ChatTabViewState extends State<ChatTabView> {
 
     if (messageDate == today) return '今天';
     if (messageDate == yesterday) return '昨天';
-    // Consider using intl package for better date formatting:
-    // if (today.difference(messageDate).inDays < 7) return DateFormat('EEEE', 'zh_CN').format(messageDate); // e.g., "星期三"
     if (today.difference(messageDate).inDays < 7) return '本周';
-    // return DateFormat('yyyy-MM-dd', 'zh_CN').format(messageDate);
     return '更早';
   }
 
