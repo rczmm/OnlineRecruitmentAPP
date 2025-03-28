@@ -1,21 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:zhaopingapp/core/network/dio_client.dart'; // Assuming dio is configured here
+import 'package:zhaopingapp/core/network/dio_client.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 
-import '../models/job.dart';
 import '../widgets/job_card.dart';
 import 'search_screen.dart';
 
-// Define function types with pagination
 typedef LoadJobsFunction = Future<List<Job>> Function(
     String? type, String? tag, int page);
 typedef RefreshJobsFunction = Future<List<Job>> Function(
-    String? type, String? tag); // Refresh usually gets the first page
+    String? type, String? tag);
 
 class JobListContainer extends StatefulWidget {
-  // Updated function signatures
   final LoadJobsFunction onLoadMore;
-  final RefreshJobsFunction onRefresh; // Renamed for clarity, implies page 1
+  final RefreshJobsFunction onRefresh;
 
   const JobListContainer(
       {super.key, required this.onLoadMore, required this.onRefresh});
@@ -75,7 +73,8 @@ class _JobListContainerState extends State<JobListContainer>
         _keywordError = 'Failed to load categories: ${e.message}';
         _isLoadingKeywords = false;
       });
-    } catch (e) { // Catch other potential errors
+    } catch (e) {
+      // Catch other potential errors
       if (!mounted) return;
       _setFallbackKeywordsAndInit();
       setState(() {
@@ -87,8 +86,14 @@ class _JobListContainerState extends State<JobListContainer>
 
   void _setFallbackKeywords() {
     _keywords = [
-      '技术开发', '产品运营', '设计创意', '市场营销',
-      '人力资源', '金融财务', '教育培训', '医疗健康'
+      '技术开发',
+      '产品运营',
+      '设计创意',
+      '市场营销',
+      '人力资源',
+      '金融财务',
+      '教育培训',
+      '医疗健康'
     ];
   }
 
@@ -96,7 +101,6 @@ class _JobListContainerState extends State<JobListContainer>
     _setFallbackKeywords();
     _initControllers(); // Init controllers with fallback keywords
   }
-
 
   void _initControllers() {
     // Dispose previous controllers if they exist (e.g., on hot reload or error retry)
@@ -115,7 +119,9 @@ class _JobListContainerState extends State<JobListContainer>
   // Optional: Listener can handle programmatic changes or complex logic
   void _onMainTabChanged() {
     // Ensure the listener doesn't trigger during the build phase or disposal
-    if (_mainTabController != null && _mainTabController!.indexIsChanging == false && mounted) {
+    if (_mainTabController != null &&
+        _mainTabController!.indexIsChanging == false &&
+        mounted) {
       // If main tab changes, reset sub-tab and trigger rebuild
       if (_subTabController?.index != 0) {
         _subTabController?.index = 0;
@@ -131,13 +137,16 @@ class _JobListContainerState extends State<JobListContainer>
   //   }
   // }
 
-
   String _getSubTabTag(int index) {
     switch (index) {
-      case 0: return "recommended";
-      case 1: return "nearby";
-      case 2: return "latest";
-      default: return "";
+      case 0:
+        return "recommended";
+      case 1:
+        return "nearby";
+      case 2:
+        return "latest";
+      default:
+        return "";
     }
   }
 
@@ -171,7 +180,8 @@ class _JobListContainerState extends State<JobListContainer>
         int selectedIndex = _mainTabController!.index; // Capture current index
 
         return AlertDialog(
-          title: const Text('选择职位类型', style: TextStyle(color: Color(0xFF4CAF50))),
+          title:
+              const Text('选择职位类型', style: TextStyle(color: Color(0xFF4CAF50))),
           contentPadding: EdgeInsets.zero, // Remove default padding
           content: SizedBox(
             width: double.maxFinite,
@@ -194,8 +204,11 @@ class _JobListContainerState extends State<JobListContainer>
                       setState(() {}); // Trigger rebuild
                     }
                   },
-                  textColor: selectedIndex == index ? const Color(0xFF4CAF50) : null,
-                  trailing: selectedIndex == index ? const Icon(Icons.check, color: Color(0xFF4CAF50)) : null,
+                  textColor:
+                      selectedIndex == index ? const Color(0xFF4CAF50) : null,
+                  trailing: selectedIndex == index
+                      ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                      : null,
                 );
               },
             ),
@@ -235,10 +248,10 @@ class _JobListContainerState extends State<JobListContainer>
     }
 
     // Get current selected type safely
-    final selectedType = (_keywords.isNotEmpty && _mainTabController!.index < _keywords.length)
-        ? _keywords[_mainTabController!.index]
-        : '';
-
+    final selectedType =
+        (_keywords.isNotEmpty && _mainTabController!.index < _keywords.length)
+            ? _keywords[_mainTabController!.index]
+            : '';
 
     return Column(
       children: [
@@ -253,16 +266,18 @@ class _JobListContainerState extends State<JobListContainer>
               prefixIcon: const Icon(Icons.search, color: Color(0xFF4CAF50)),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.clear, color: Colors.grey),
-                onPressed: () => _searchController.clear(),
-              )
+                      icon: const Icon(Icons.clear, color: Colors.grey),
+                      onPressed: () => _searchController.clear(),
+                    )
                   : null,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
                 borderSide: const BorderSide(color: Color(0xFF4CAF50)),
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 10.0), // Adjust padding
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 10.0), // Adjust padding
             ),
             onSubmitted: _onSearch,
           ),
@@ -297,17 +312,21 @@ class _JobListContainerState extends State<JobListContainer>
                   _subTabController?.index = 0;
                   setState(() {});
                 },
-                padding: const EdgeInsets.only(right: 48), // Space for the button
+                padding:
+                    const EdgeInsets.only(right: 48), // Space for the button
               ),
               Positioned(
                 right: 0,
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white, // Match background
-                    border: Border(left: BorderSide(color: Colors.grey.shade300, width: 1)),
+                    border: Border(
+                        left:
+                            BorderSide(color: Colors.grey.shade300, width: 1)),
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.menu, color: Color(0xFF4CAF50)), // Changed icon
+                    icon: const Icon(Icons.menu, color: Color(0xFF4CAF50)),
+                    // Changed icon
                     onPressed: () => _showCategoryDialog(context),
                     tooltip: '展开所有分类',
                   ),
@@ -346,7 +365,8 @@ class _JobListContainerState extends State<JobListContainer>
               final selectedTag = _getSubTabTag(subIndex);
               // Generate JobListView directly, passing type/tag and using ValueKey
               return JobListView(
-                key: ValueKey('$selectedType-$selectedTag'), // Unique key per tab combination
+                key: ValueKey('$selectedType-$selectedTag'),
+                // Unique key per tab combination
                 onLoadMore: widget.onLoadMore,
                 onRefresh: widget.onRefresh,
                 initialType: selectedType,
@@ -359,7 +379,6 @@ class _JobListContainerState extends State<JobListContainer>
     );
   }
 }
-
 
 // --- JobListView (with pagination support and didUpdateWidget) ---
 
@@ -431,7 +450,8 @@ class _JobListViewState extends State<JobListView> {
         newJobs = await widget.onRefresh(widget.initialType, widget.initialTag);
       } else {
         // Load next page
-        newJobs = await widget.onLoadMore(widget.initialType, widget.initialTag, _currentPage);
+        newJobs = await widget.onLoadMore(
+            widget.initialType, widget.initialTag, _currentPage);
       }
 
       if (!mounted) return;
@@ -456,7 +476,8 @@ class _JobListViewState extends State<JobListView> {
       setState(() {
         _error = '加载数据失败: $e';
         _isLoading = false;
-        _isFirstLoad = false; // Mark initial load attempt as complete even on error
+        _isFirstLoad =
+            false; // Mark initial load attempt as complete even on error
       });
     }
   }
@@ -464,7 +485,8 @@ class _JobListViewState extends State<JobListView> {
   void _onScroll() {
     // Load more when near the bottom
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.9 && // Trigger slightly before the end
+            _scrollController.position.maxScrollExtent *
+                0.9 && // Trigger slightly before the end
         !_isLoading &&
         _hasMore) {
       _loadJobs(); // Load next page
@@ -486,17 +508,21 @@ class _JobListViewState extends State<JobListView> {
     }
 
     // Display error message if an error occurred
-    if (_error != null && _jobs.isEmpty) { // Show error prominently if list is empty
+    if (_error != null && _jobs.isEmpty) {
+      // Show error prominently if list is empty
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, color: Colors.red, size: 60),
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+            Text(_error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _loadJobs(isRefresh: true), // Retry calls refresh
+              onPressed: () => _loadJobs(isRefresh: true),
+              // Retry calls refresh
               child: const Text('重试'),
             ),
           ],
@@ -512,7 +538,8 @@ class _JobListViewState extends State<JobListView> {
           children: [
             const Icon(Icons.search_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text('暂无相关职位信息', style: TextStyle(fontSize: 18, color: Colors.grey)),
+            const Text('暂无相关职位信息',
+                style: TextStyle(fontSize: 18, color: Colors.grey)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _loadJobs(isRefresh: true),

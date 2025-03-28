@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 import '../widgets/job_card.dart';
-import 'job_detail_screen.dart';
+import 'job_detail_screen1.dart';
 
 class FavoriteJobsScreen extends StatelessWidget {
   const FavoriteJobsScreen({super.key});

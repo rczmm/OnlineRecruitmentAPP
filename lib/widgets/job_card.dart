@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
-import '../screens/job_detail_screen.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
+import 'package:zhaopingapp/features/jobs/presentation/screens/job_detail_screen.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 import '../ChatScreen.dart';
 import '../core/network/dio_client.dart';
 
@@ -61,7 +61,6 @@ class JobDetailScreen extends StatelessWidget {
           IconButton(
             icon: Icon(job.isFavorite ? Icons.favorite : Icons.favorite_border),
             onPressed: () {
-              // TODO 添加收藏功能
               dio.post('http://localhost:3000/favorite',
                   data: {'jobId': job.id});
             },
@@ -245,7 +244,7 @@ class JobDetailScreen extends StatelessWidget {
                     const Text(
                       '岗位福利',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     if (job.requirements.isNotEmpty)

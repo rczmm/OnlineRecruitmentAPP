@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zhaopingapp/models/job.dart';
-import 'package:zhaopingapp/screens/job_detail_screen.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
+import 'package:zhaopingapp/screens/job_detail_screen1.dart';
 
 class CollectScreen extends StatefulWidget {
   const CollectScreen({super.key});

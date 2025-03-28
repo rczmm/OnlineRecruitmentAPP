@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/models/job.dart';
 
 class JobService {
@@ -110,5 +113,33 @@ class JobService {
     return ['全部', '附近', 'Java', '不限经验', 'Python', '产品经理', '应届生', 'Flutter'];
     // Example error simulation:
     // throw Exception("Failed to load tags from API");
+  }
+
+  Future<bool> toggleFavorite(String jobId, bool currentIsFavorite) async {
+    try {
+      String endpoint = 'job/favorite';
+
+      Response response;
+
+      response = await dio.post(
+        endpoint,
+        data: {'jobId': jobId},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('Favorite status toggled successfully for job $jobId');
+        return true;
+      } else {
+        debugPrint(
+            'Failed to toggle favorite: ${response.statusCode} ${response.data}');
+        return false;
+      }
+    } on DioException catch (e) {
+      debugPrint('DioError toggling favorite for job $jobId: $e');
+      return false;
+    } catch (e) {
+      debugPrint('Error toggling favorite for job $jobId: $e');
+      return false;
+    }
   }
 }

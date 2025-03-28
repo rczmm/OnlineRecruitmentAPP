@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:zhaopingapp/core/errors/exceptions.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/features/jobs/data/repositories/job_repository.dart';
-import 'package:zhaopingapp/models/job.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 import 'package:zhaopingapp/screens/job_list_container.dart'; // Make sure this path is correct
 
 class HomeScreen extends StatefulWidget {

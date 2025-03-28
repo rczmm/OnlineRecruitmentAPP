@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/job.dart';
-import '../screens/job_detail_screen.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
+import '../screens/job_detail_screen1.dart';
 
 class ApplicationHistoryScreen extends StatefulWidget {
   final int initialTabIndex; // 0 表示已投递，1 表示沟通过

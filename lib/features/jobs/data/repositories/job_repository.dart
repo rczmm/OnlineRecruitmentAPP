@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:zhaopingapp/core/errors/exceptions.dart';
 import 'package:zhaopingapp/core/network/api_constants.dart';
-import 'package:zhaopingapp/models/job.dart';
+import 'package:zhaopingapp/features/jobs/data/models/job_model.dart';
 
 class JobRepository {
   final Dio _dio;
