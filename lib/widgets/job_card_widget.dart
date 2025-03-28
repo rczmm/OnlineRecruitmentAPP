@@ -23,7 +23,6 @@ class JobCardWidget extends StatelessWidget {
         // Add InkWell for tap effect
         borderRadius: BorderRadius.circular(8), // Match Card shape
         onTap: () {
-          // TODO: Navigate to job detail screen, passing job.id or the job object
           debugPrint('Tapped on job: ${job.title} (ID: ${job.id})');
           // Example navigation:
           // Navigator.push(context, MaterialPageRoute(builder: (_) => JobDetailPage(jobId: job.id)));

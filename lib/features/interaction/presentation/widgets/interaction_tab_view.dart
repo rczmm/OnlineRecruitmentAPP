@@ -347,7 +347,6 @@ class _InteractionTabViewState extends State<InteractionTabView>
     }
     maxY = (maxY + 1).ceilToDouble(); // Add some padding
 
-    // TODO: Improve axis titles/labels based on _trendPoints dates
     final maxX = (_trendPoints.length - 1).toDouble();
 
     return AspectRatio(

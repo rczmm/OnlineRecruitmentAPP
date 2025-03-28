@@ -31,7 +31,6 @@ class ViewerCardWidget extends StatelessWidget {
       subtitle: Text(viewer.company, style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
       trailing: Text(_formatTimeAgo(viewer.viewedAt), style: textTheme.bodySmall?.copyWith(color: theme.hintColor)),
       onTap: () {
-        // TODO: Navigate to viewer's profile or chat
         debugPrint('Tapped on viewer: ${viewer.name}');
       },
     );
