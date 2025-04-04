@@ -160,6 +160,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
+      debugPrint("Sending file message: ${widget.peerId}");
       _chatService.sendMessage(widget.peerId, text);
     } catch (e) {
       debugPrint("Error sending message: $e");

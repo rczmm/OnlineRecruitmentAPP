@@ -7,6 +7,7 @@ class StorageService {
 
   // 提供一个常量 key
   static const String _authTokenKey = 'authToken';
+  static const String _userIdKey = 'userId';
 
   StorageService({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
@@ -20,6 +21,17 @@ class StorageService {
       // 处理读取错误，例如记录日志
       debugPrint('Error reading auth token: $e');
       return null;
+    }
+  }
+
+  Future<String?> getUserId() async {
+    try {
+      final token = await _storage.read(key: _userIdKey);
+      return token;
+    } catch (e) {
+      // 处理读取错误，例如记录日志
+      debugPrint('Error reading auth token: $e');
+      return "";
     }
   }
 

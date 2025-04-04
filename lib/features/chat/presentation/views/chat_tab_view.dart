@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zhaopingapp/ChatScreen.dart';
+import 'package:zhaopingapp/core/services/storage_service.dart';
 import 'package:zhaopingapp/features/chat/presentation/screens/chat_screen.dart';
 import 'package:zhaopingapp/models/chat.dart';
 import 'package:zhaopingapp/services/chat_service.dart';
@@ -22,6 +23,8 @@ class _ChatTabViewState extends State<ChatTabView> {
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
 
+  String? userId;
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +40,8 @@ class _ChatTabViewState extends State<ChatTabView> {
   }
 
   Future<void> _fetchChatList() async {
-    // Simplified loading state management
+    userId = await StorageService().getUserId();
+
     if (!mounted) return;
     setState(() {
       _isLoading = _chatList.isEmpty; // Show full loading only if list is empty
@@ -82,7 +86,6 @@ class _ChatTabViewState extends State<ChatTabView> {
     });
   }
 
-  // --- Date Header Logic (Keep as before) ---
   bool _shouldShowDateHeader(DateTime current, DateTime previous) {
     return current.year != previous.year ||
         current.month != previous.month ||
@@ -90,7 +93,6 @@ class _ChatTabViewState extends State<ChatTabView> {
   }
 
   String _getDateHeader(DateTime dateTime) {
-    // ... (keep existing _getDateHeader logic)
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
@@ -101,8 +103,6 @@ class _ChatTabViewState extends State<ChatTabView> {
     if (today.difference(messageDate).inDays < 7) return '本周';
     return '更早';
   }
-
-  // --- End Date Header Logic ---
 
   @override
   Widget build(BuildContext context) {
@@ -122,13 +122,11 @@ class _ChatTabViewState extends State<ChatTabView> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
-      // Adjusted padding
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
           hintText: '搜索聊天',
           prefixIcon: const Icon(Icons.search, size: 22),
-          // Slightly larger icon
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 20),
@@ -191,7 +189,9 @@ class _ChatTabViewState extends State<ChatTabView> {
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
                       peerName: chat.name,
-                      peerId: chat.recipientId, // Ensure chat.id is the correct peer ID
+                      peerId: chat.recipientId == userId
+                          ? chat.senderId
+                          : chat.recipientId,
                     ),
                   ),
                 );
