@@ -71,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       final response = await _dio.post(
-        'http://localhost:8088/auth/login',
+        'http://192.168.137.1:8088/auth/login',
         data: {
           'username': username,
           'password': password,

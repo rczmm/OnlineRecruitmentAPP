@@ -328,12 +328,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 return ListTile(
                   title: Text(phrase.text),
                   onTap: () {
-                    _textEditingController.text = phrase.text;
-                    _handleSendMessage(phrase.text);
-                    _textEditingController.selection =
-                        TextSelection.fromPosition(TextPosition(
-                            offset: _textEditingController.text.length));
                     Navigator.pop(dialogContext);
+                    _textEditingController.text = phrase.text;
+                    // 可选：将光标移到文本末尾
+                    _textEditingController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _textEditingController.text.length));
                   },
                 );
               },

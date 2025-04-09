@@ -1,7 +1,10 @@
-import 'dart:io'; // 导入io库以进行文件操作（如果需要）
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:zhaopingapp/core/services/api_service.dart';
+import 'package:zhaopingapp/core/permissions/storage_permission.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:zhaopingapp/widgets/NetworkPDFViewer.dart'; // 导入日期格式化库
+import 'package:zhaopingapp/widgets/NetworkPDFViewer.dart';
 
 class AttachmentResumePage extends StatefulWidget {
   const AttachmentResumePage({super.key});
@@ -11,7 +14,6 @@ class AttachmentResumePage extends StatefulWidget {
 }
 
 class _AttachmentResumePageState extends State<AttachmentResumePage> {
-  // 模拟PDF文件列表，实际应用中需要从文件系统或服务器获取
   final List<PdfFile> pdfFiles = [
     PdfFile(
         name: '我的简历1.pdf',
@@ -47,14 +49,12 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          // 返回按钮
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('附件简历'),
         actions: [
           IconButton(
-            // 提示按钮
             icon: const Icon(Icons.info_outline),
             onPressed: _showHintDialog,
           ),
@@ -66,7 +66,6 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              // 使用Expanded使列表填充可用空间
               child: ListView.builder(
                 itemCount: pdfFiles.length,
                 itemBuilder: (context, index) {
@@ -78,14 +77,12 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => NetworkPDFViewer(
-                                    pdfUrl:
-                                        "https://arxiv.org/pdf/2502.10215")));
+                                    pdfUrl: "https://arxiv.org/pdf/2502.10215")));
                       },
                       title: Text(file.name),
                       subtitle: Text(
                           '${file.size} - ${DateFormat('yyyy-MM-dd HH:mm').format(file.lastModified)}'),
-                      // 格式化日期
-                      trailing: const Icon(Icons.picture_as_pdf), // PDF图标
+                      trailing: const Icon(Icons.picture_as_pdf),
                     ),
                   );
                 },
@@ -96,11 +93,81 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
               child: Text('最多支持上传三份简历。'),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround, // 均匀分布按钮
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    // 上传简历的逻辑
+                  onPressed: () async {
+                    bool hasPermission = await StoragePermission.request();
+                    if (!hasPermission) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('需要存储权限才能上传文件')),
+                        );
+                      }
+                      return;
+                    }
+
+                    try {
+                      FilePickerResult? result = await FilePicker.platform.pickFiles(
+                        type: FileType.custom,
+                        allowedExtensions: ['pdf', 'doc', 'docx'],
+                      );
+
+                      if (result != null && mounted) {
+                        File file = File(result.files.single.path!);
+                        
+                        int fileSize = await file.length();
+                        if (fileSize > 10 * 1024 * 1024) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('文件大小不能超过10MB')),
+                          );
+                          return;
+                        }
+
+                        if (pdfFiles.length >= 3) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('最多只能上传3份简历')),
+                          );
+                          return;
+                        }
+
+                        if (!mounted) return;
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+
+                        final apiService = ApiService();
+                        final response = await apiService.uploadFile(file);
+
+                        if (!mounted) return;
+                        Navigator.pop(context);
+
+                        if (response.success && response.fileUrl != null) {
+                          setState(() {
+                            pdfFiles.add(PdfFile(
+                              name: result.files.single.name,
+                              size: '${(fileSize / 1024).round()}KB',
+                              lastModified: DateTime.now(),
+                            ));
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('上传成功')),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('上传失败: ${response.message}')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('上传失败: $e')),
+                      );
+                    }
                   },
                   child: const Text('上传简历'),
                 ),

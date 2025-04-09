@@ -1,10 +1,37 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:zhaopingapp/core/models/file_upload_response.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart';
 
 class ApiService {
+  Future<FileUploadResponse> uploadFile(File file) async {
+    try {
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(file.path, filename: fileName),
+      });
+
+      final options = await _getAuthOptions();
+      final response = await _dio.post(
+        '/file/upload',
+        data: formData,
+        options: options,
+      );
+
+      if (response.statusCode == 200) {
+        return FileUploadResponse.fromJson(response.data);
+      } else {
+        throw Exception('文件上传失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error uploading file: $e');
+      throw Exception('文件上传失败: $e');
+    }
+  }
   final Dio _dio = DioClient().dio;
   final _storage = const FlutterSecureStorage();
 
@@ -18,7 +45,7 @@ class ApiService {
   }
 
   Future<List<UserFile>> fetchUserFiles() async {
-    final url = '/user/my-files';
+    const url = '/user/my-files';
     debugPrint("Fetching user files from $url...");
     try {
       final options = await _getAuthOptions();
@@ -51,7 +78,7 @@ class ApiService {
   }
 
   Future<List<CommonPhrase>> fetchCommonPhrases(String userId) async {
-    final url = '/commonPhrases/list'; // Correct endpoint
+    const url = '/commonPhrases/list'; // Correct endpoint
     debugPrint("Fetching common phrases for user $userId from $url...");
     try {
       // Common phrases might not need auth depending on API design, adjust if needed
@@ -91,7 +118,7 @@ class ApiService {
     int limit = 50,
     String? beforeTimestamp,
   }) async {
-    final url = '/chat/history';
+    const url = '/chat/history';
 
     final queryParameters = <String, dynamic>{
       'limit': limit,

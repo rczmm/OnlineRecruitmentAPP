@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/route_names.dart';
 import 'core/services/storage_service.dart';
-import 'core/theme/app_theme_green.dart';
+import 'core/theme/app_theme.dart';
 
 final storageService = StorageService();
 
@@ -25,6 +25,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '我的应用',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       // 使用命名路由
       initialRoute: initialRoute,
