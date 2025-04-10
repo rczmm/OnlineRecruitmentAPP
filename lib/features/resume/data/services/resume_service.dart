@@ -10,6 +10,10 @@ class ResumeService {
     return await _dio.get('/resume');
   }
 
+  Future<Response> fetchUserResume(String userId) async {
+    return await _dio.get('/resume/user', queryParameters: {'userId': userId});
+  }
+
   Future<Response> updateResume(Map<String, dynamic> resumeData) async {
     return await _dio.put('/resume', data: resumeData);
   }

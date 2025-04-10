@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:zhaopingapp/core/utils/file_picker_web.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:zhaopingapp/core/services/api_service.dart';
+import 'package:zhaopingapp/core/services/api_service_platform.dart';
 import 'package:zhaopingapp/core/permissions/storage_permission.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -76,7 +78,7 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => NetworkPDFViewer(
+                                builder: (context) => const NetworkPDFViewer(
                                     pdfUrl: "https://arxiv.org/pdf/2502.10215")));
                       },
                       title: Text(file.name),
@@ -108,13 +110,69 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
                     }
 
                     try {
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
-                        type: FileType.custom,
-                        allowedExtensions: ['pdf', 'doc', 'docx'],
-                      );
+                      if (kIsWeb) {
+                        final webFile = await FilePickerWeb.pickFile();
+                        if (webFile != null && mounted) {
+                          // Handle web file upload
+                          final fileName = webFile.name;
+                          final fileSize = webFile.size;
+                          
+                          if (fileSize > 10 * 1024 * 1024) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('文件大小不能超过10MB')),
+                            );
+                            return;
+                          }
 
-                      if (result != null && mounted) {
-                        File file = File(result.files.single.path!);
+                          if (pdfFiles.length >= 3) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('最多只能上传3份简历')),
+                            );
+                            return;
+                          }
+
+                          // Show loading indicator
+                          if (!mounted) return;
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(child: CircularProgressIndicator()),
+                          );
+
+                          final apiService = ApiService();
+                          
+                          // Create a mock File-like object for the web
+                          final response = await apiService.uploadWebFile(webFile);
+
+                          if (!mounted) return;
+                          Navigator.pop(context); // Remove loading indicator
+
+                          if (response.success && response.fileUrl != null) {
+                            setState(() {
+                              pdfFiles.add(PdfFile(
+                                name: fileName,
+                                size: '${(fileSize / (1024 * 1024)).toStringAsFixed(2)}MB',
+                                lastModified: DateTime.now(),
+                              ));
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('上传成功')),
+                            );
+                          } else {
+                            debugPrint('上传失败: ${response.message}');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('上传失败: ${response.message}')),
+                            );
+                          }
+                        }
+                      } else {
+                        FilePickerResult? result = await FilePicker.platform.pickFiles(
+                          type: FileType.custom,
+                          allowedExtensions: ['pdf', 'doc', 'docx'],
+                        );
+
+                        if (result != null && mounted) {
+                          File file = File(result.files.single.path!);
                         
                         int fileSize = await file.length();
                         if (fileSize > 10 * 1024 * 1024) {
@@ -156,14 +214,17 @@ class _AttachmentResumePageState extends State<AttachmentResumePage> {
                             const SnackBar(content: Text('上传成功')),
                           );
                         } else {
+                          debugPrint('上传失败: ${response.message}');
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('上传失败: ${response.message}')),
                           );
                         }
                       }
+                    }
                     } catch (e) {
                       if (!mounted) return;
                       Navigator.pop(context);
+                      debugPrint('上传失败: $e');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('上传失败: $e')),
                       );

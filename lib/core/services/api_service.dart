@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -8,16 +9,27 @@ import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart';
 
 class ApiService {
-  Future<FileUploadResponse> uploadFile(File file) async {
+  final Dio _dio = DioClient().dio;
+  final _storage = const FlutterSecureStorage();
+
+  Future<FileUploadResponse> uploadFile(dynamic file) async {
     try {
-      String fileName = file.path.split('/').last;
-      FormData formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path, filename: fileName),
-      });
+      late FormData formData;
+      
+      if (kIsWeb) {
+        throw UnsupportedError('Web file upload should use uploadWebFile method');
+      } else if (file is File) {
+        String fileName = file.path.split('/').last;
+        formData = FormData.fromMap({
+          'file': await MultipartFile.fromFile(file.path, filename: fileName),
+        });
+      } else {
+        throw Exception('Invalid file type provided');
+      }
 
       final options = await _getAuthOptions();
       final response = await _dio.post(
-        '/file/upload',
+        '/api/file/upload',
         data: formData,
         options: options,
       );
@@ -32,8 +44,6 @@ class ApiService {
       throw Exception('文件上传失败: $e');
     }
   }
-  final Dio _dio = DioClient().dio;
-  final _storage = const FlutterSecureStorage();
 
   Future<Options> _getAuthOptions() async {
     String? authToken = await _storage.read(key: 'authToken');
@@ -78,15 +88,12 @@ class ApiService {
   }
 
   Future<List<CommonPhrase>> fetchCommonPhrases(String userId) async {
-    const url = '/commonPhrases/list'; // Correct endpoint
+    const url = '/commonPhrases/list';
     debugPrint("Fetching common phrases for user $userId from $url...");
     try {
-      // Common phrases might not need auth depending on API design, adjust if needed
-      // final options = await _getAuthOptions();
       final response = await _dio.get(
         url,
         queryParameters: {'userId': userId},
-        // options: options, // Uncomment if auth is needed
       );
 
       debugPrint("Fetch phrases response status: ${response.statusCode}");
@@ -138,8 +145,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200 && response.data['data'] is List) {
-        List<Map<String, dynamic>> historyData = List<Map<String, dynamic>>.from((response.data['data'] as List)
-                .whereType<Map<String, dynamic>>());
+        List<Map<String, dynamic>> historyData = List<Map<String, dynamic>>.from(
+            (response.data['data'] as List).whereType<Map<String, dynamic>>());
         debugPrint("Fetched ${historyData.length} historical messages.");
         return historyData;
       } else {
@@ -157,47 +164,33 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> fetchUserProfile() async {
-    // --- Adjust the endpoint to your actual API endpoint ---
-    final url = '/user/profile'; // Example: /api/user/profile or /api/me
-    // -------------------------------------------------------
+    final url = '/user/profile';
 
     debugPrint("Fetching user profile from $url...");
     try {
-      // Get options with Authorization header
       final options = await _getAuthOptions();
-
-      // Make the GET request
       final response = await _dio.get(url, options: options);
 
       debugPrint("Fetch profile response status: ${response.statusCode}");
 
-      // Check for successful response and correct data type
-      if (response.statusCode == 200 && response.data['data'] is Map<String,
-      dynamic>) {
-        // Return the user data map directly
+      if (response.statusCode == 200 && response.data['data'] is Map<String, dynamic>) {
         return response.data['data'] as Map<String, dynamic>;
       } else {
-        // Handle unexpected status code or data format
-        debugPrint("Failed to load profile, status: ${response.statusCode}, data: ${response.data}");
+        debugPrint(
+            "Failed to load profile, status: ${response.statusCode}, data: ${response.data}");
         throw Exception("无法加载用户信息 (错误码: ${response.statusCode})");
       }
     } on DioException catch (e) {
-      // Handle Dio-specific errors (network, timeout, status codes)
       if (e.response?.statusCode == 401) {
-        // Specific handling for Unauthorized (e.g., token expired)
         debugPrint("Unauthorized (401) fetching profile. Token might be invalid.");
-        throw Exception("请先登录 (401)"); // Throw specific error for login prompt
+        throw Exception("请先登录 (401)");
       }
-      // General Dio error handling
       debugPrint("DioError fetching profile: ${e.message}");
       debugPrint("DioError response: ${e.response?.data}");
       throw Exception("加载用户信息失败: ${e.message ?? '网络请求错误'}");
     } catch (e) {
-      // Handle any other unexpected errors
       debugPrint("Unexpected error fetching profile: $e");
       throw Exception("加载用户信息时发生未知错误");
     }
   }
-
-
 }
