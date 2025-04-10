@@ -5,8 +5,8 @@ import 'package:zhaopingapp/core/utils/snackbar_util.dart'; // Import SnackbarUt
 
 // Import navigation targets
 import 'package:zhaopingapp/AttachmentResumePage.dart';
-import 'package:zhaopingapp/ResumePage.dart';
 import 'package:zhaopingapp/features/profile/presentation/screens/user_info_screen.dart';
+import 'package:zhaopingapp/features/resume/presentation/pages/resume_page.dart';
 import 'package:zhaopingapp/screens/PendingInterviewScreen.dart';
 import 'package:zhaopingapp/screens/PersonalityTestScreen.dart';
 import 'package:zhaopingapp/screens/QuizScreen.dart';

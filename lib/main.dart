@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/route_names.dart';
 import 'core/services/storage_service.dart';
@@ -7,7 +8,12 @@ import 'core/theme/app_theme.dart';
 final storageService = StorageService();
 
 void main() async {
+  // 确保Flutter绑定初始化
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化shared_preferences插件
+  await SharedPreferences.getInstance();
+  
   String? initialToken = await storageService.getAuthToken();
   final String initialRoute = (initialToken != null && initialToken.isNotEmpty)
       ? RouteNames.home

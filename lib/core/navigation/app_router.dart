@@ -12,7 +12,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AuthScreen());
       default:
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
+          builder: (_) => const Scaffold(
             body: Center(
               child: Text('请先登录！'),
             ),
