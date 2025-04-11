@@ -44,7 +44,7 @@ extension ApiServiceWeb on ApiService {
         } else {
           completer.complete(FileUploadResponse(
             success: false,
-            message: 'Upload failed: ${xhr.statusText}',
+            msg: 'Upload failed: ${xhr.statusText}',
           ));
         }
       });
@@ -52,7 +52,7 @@ extension ApiServiceWeb on ApiService {
       xhr.onError.listen((_) {
         completer.complete(FileUploadResponse(
           success: false,
-          message: 'Upload failed: Network error',
+          msg: 'Upload failed: Network error',
         ));
       });
 
@@ -82,7 +82,7 @@ extension ApiServiceWeb on ApiService {
     } catch (e) {
       return FileUploadResponse(
         success: false,
-        message: 'Upload failed: $e',
+        msg: 'Upload failed: $e',
       );
     }
   }

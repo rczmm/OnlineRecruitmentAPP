@@ -1,47 +1,103 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart' show PlatformFile;
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zhaopingapp/core/models/file_upload_response.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart';
+import 'package:zhaopingapp/core/utils/file_picker_web.dart';
 
 class ApiService {
   final Dio _dio = DioClient().dio;
   final _storage = const FlutterSecureStorage();
 
-  Future<FileUploadResponse> uploadFile(dynamic file) async {
+  Future<FileUploadResponse> uploadFile(dynamic fileData) async {
+    // Log entry point and the type of data received
+    debugPrint(
+        "ApiService.uploadFile: Entered. Received data type: ${fileData?.runtimeType}");
+
+    if (fileData == null) {
+      debugPrint("ApiService.uploadFile: Error - Received null fileData.");
+      throw Exception("Cannot upload null file data.");
+    }
+
     try {
-      late FormData formData;
-      
-      if (kIsWeb) {
-        throw UnsupportedError('Web file upload should use uploadWebFile method');
-      } else if (file is File) {
-        String fileName = file.path.split('/').last;
-        formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(file.path, filename: fileName),
-        });
+      late MultipartFile multipartFile;
+      String? uploadFilename;
+
+      // --- Type Handling ---
+      if (fileData is File) {
+        String filePath = fileData.path;
+        if (filePath.isEmpty) {
+          throw Exception("File path is empty.");
+        }
+        uploadFilename = filePath.split('/').last;
+        debugPrint(
+            "ApiService.uploadFile: Creating MultipartFile from file...");
+        multipartFile = await MultipartFile.fromFile(
+          filePath,
+          filename: uploadFilename,
+        );
+      } else if (fileData is PlatformFile) {
+        uploadFilename = fileData.name;
+        Uint8List? fileBytes = fileData.bytes;
+
+        if (fileBytes == null) {
+          throw Exception(
+              "PlatformFile bytes are null. Ensure 'withData: true' was used during picking.");
+        }
+        if (uploadFilename.isEmpty) {
+          throw Exception("PlatformFile name is empty.");
+        }
+        multipartFile = MultipartFile.fromBytes(
+          fileBytes, // Use the bytes from PlatformFile
+          filename: uploadFilename,
+        );
       } else {
-        throw Exception('Invalid file type provided');
+        throw Exception(
+            'Invalid file data type provided: ${fileData.runtimeType}');
       }
 
+      debugPrint("ApiService.uploadFile: Creating FormData...");
+      FormData formData = FormData.fromMap({
+        'file': multipartFile, // Key 'file' must match backend expectation
+      });
+      debugPrint("ApiService.uploadFile: FormData created.");
+
+      debugPrint("ApiService.uploadFile: Getting auth options...");
       final options = await _getAuthOptions();
+      debugPrint(
+          "ApiService.uploadFile: Auth options received. Making POST request to /api/file/upload...");
+
       final response = await _dio.post(
-        '/api/file/upload',
+        '/file/upload', // Your endpoint
         data: formData,
         options: options,
+        onSendProgress: (int sent, int total) {},
       );
+      debugPrint(
+          "ApiService.uploadFile: POST request completed. Status: ${response.statusCode}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
+        debugPrint(
+            "ApiService.uploadFile: Upload successful. Parsing response.");
         return FileUploadResponse.fromJson(response.data);
       } else {
-        throw Exception('文件上传失败: ${response.statusCode}');
+        throw DioError(
+          // Throw a DioError for consistency if status is not 200
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioErrorType.badResponse,
+          error: 'Upload failed with status ${response.statusCode}',
+        );
       }
-    } catch (e) {
-      debugPrint('Error uploading file: $e');
-      throw Exception('文件上传失败: $e');
+    } on DioError catch (e) {
+      // Catch Dio specific errors
+      throw Exception('网络或服务器错误: ${e.response?.statusCode ?? e.message}');
+    } catch (e, s) {
+      throw Exception('文件上传处理出错: $e'); // Rethrow
     }
   }
 
@@ -145,8 +201,9 @@ class ApiService {
       );
 
       if (response.statusCode == 200 && response.data['data'] is List) {
-        List<Map<String, dynamic>> historyData = List<Map<String, dynamic>>.from(
-            (response.data['data'] as List).whereType<Map<String, dynamic>>());
+        List<Map<String, dynamic>> historyData =
+            List<Map<String, dynamic>>.from((response.data['data'] as List)
+                .whereType<Map<String, dynamic>>());
         debugPrint("Fetched ${historyData.length} historical messages.");
         return historyData;
       } else {
@@ -173,7 +230,8 @@ class ApiService {
 
       debugPrint("Fetch profile response status: ${response.statusCode}");
 
-      if (response.statusCode == 200 && response.data['data'] is Map<String, dynamic>) {
+      if (response.statusCode == 200 &&
+          response.data['data'] is Map<String, dynamic>) {
         return response.data['data'] as Map<String, dynamic>;
       } else {
         debugPrint(
@@ -182,7 +240,8 @@ class ApiService {
       }
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        debugPrint("Unauthorized (401) fetching profile. Token might be invalid.");
+        debugPrint(
+            "Unauthorized (401) fetching profile. Token might be invalid.");
         throw Exception("请先登录 (401)");
       }
       debugPrint("DioError fetching profile: ${e.message}");
