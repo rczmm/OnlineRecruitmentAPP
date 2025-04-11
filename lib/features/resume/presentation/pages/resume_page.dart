@@ -26,14 +26,30 @@ class _ResumePageState extends State<ResumePage> {
   final _formKey = GlobalKey<FormState>();
 
   // TextEditingControllers for basic info
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _jobStatusController = TextEditingController();
-  final _strengthsController = TextEditingController();
-  final _expectationsController = TextEditingController();
-  final _personalityController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _jobStatusController;
+  late final TextEditingController _strengthsController;
+  late final TextEditingController _expectationsController;
+  late final TextEditingController _personalityController;
+
+  // TextEditingControllers for basic info
+  _initControllers() {
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _emailController = TextEditingController();
+    _addressController = TextEditingController();
+    _jobStatusController = TextEditingController();
+    _strengthsController = TextEditingController();
+    _expectationsController = TextEditingController();
+    _personalityController = TextEditingController();
+  }
+
+
+
+
   final _newSkillController = TextEditingController();
 
   // Form field variables
@@ -46,6 +62,7 @@ class _ResumePageState extends State<ResumePage> {
   @override
   void initState() {
     super.initState();
+    _initControllers();
     _resumeBloc = ResumeBloc();
     _resumeBloc.add(LoadResume());
   }
@@ -106,6 +123,10 @@ class _ResumePageState extends State<ResumePage> {
   }
 
   void _updateControllers(ResumeModel resume) {
+    if (!mounted) {
+      return;
+    }
+
     _nameController.text = resume.name;
     _phoneController.text = resume.phone;
     _emailController.text = resume.email;
