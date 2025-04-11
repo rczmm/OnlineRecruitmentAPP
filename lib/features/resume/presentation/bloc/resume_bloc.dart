@@ -1,9 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zhaopingapp/features/resume/data/models/education_model.dart';
-import 'package:zhaopingapp/features/resume/data/models/project_experience_model.dart';
-import 'package:zhaopingapp/features/resume/data/models/resume_model.dart';
-import 'package:zhaopingapp/features/resume/data/models/work_experience_model.dart';
 import 'package:zhaopingapp/features/resume/data/repositories/resume_repository.dart';
+import 'package:zhaopingapp/features/resume/data/models/project_experience_model.dart';
+import 'package:zhaopingapp/features/resume/data/models/education_model.dart';
 import 'resume_event.dart';
 import 'resume_state.dart';
 
@@ -15,10 +14,10 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
         super(ResumeInitial()) {
     on<LoadResume>(_onLoadResume);
     on<UpdateResume>(_onUpdateResume);
-    on<UpdateSkills>(_onUpdateSkills);
     on<AddWorkExperience>(_onAddWorkExperience);
     on<UpdateWorkExperience>(_onUpdateWorkExperience);
     on<DeleteWorkExperience>(_onDeleteWorkExperience);
+    on<UpdateSkills>(_onUpdateSkills);
     on<AddProjectExperience>(_onAddProjectExperience);
     on<AddEducation>(_onAddEducation);
     on<AddHonor>(_onAddHonor);
@@ -27,8 +26,8 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     on<DeleteCertification>(_onDeleteCertification);
   }
 
-  Future<void> _onLoadResume(LoadResume event,
-      Emitter<ResumeState> emit) async {
+  Future<void> _onLoadResume(
+      LoadResume event, Emitter<ResumeState> emit) async {
     emit(ResumeLoading());
     try {
       final resume = await _repository.getResume();
@@ -38,346 +37,231 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
     }
   }
 
-  Future<void> _onUpdateResume(UpdateResume event,
-      Emitter<ResumeState> emit) async {
+  Future<void> _onUpdateResume(
+      UpdateResume event, Emitter<ResumeState> emit) async {
+    debugPrint('_onUpdateResume 方法被调用');
     emit(ResumeSaving());
     try {
-      final success = await _repository.updateResume(event.resume);
+      debugPrint('尝试保存简历...');
+      final success = await _repository.saveResume(event.resume);
       if (success) {
+        debugPrint('简历保存成功');
         emit(ResumeLoaded(event.resume));
       } else {
+        debugPrint('简历保存失败');
         emit(ResumeError('Failed to update resume'));
       }
     } catch (e) {
+      debugPrint('保存简历时出错: $e');
       emit(ResumeError('Error updating resume: $e'));
     }
   }
 
-  Future<void> _onUpdateSkills(UpdateSkills event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.updateSkills(event.skills);
-        if (success) {
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: currentState.resume.certifications,
-            skills: event.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error updating skills: $e'));
-      }
+  Future<void> _onAddWorkExperience(
+      AddWorkExperience event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      await _repository.addWorkExperience(event.workExperience.toMap());
+      emit(ResumeOperationSuccess());
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onAddWorkExperience(AddWorkExperience event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success =
-        await _repository.addWorkExperience(event.workExperience.toJson());
-        if (success) {
-          final updatedWorkExperiences =
-          List<WorkExperience>.from(currentState.resume.workExperiences)
-            ..add(event.workExperience);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: updatedWorkExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error adding work experience: $e'));
+  Future<void> _onUpdateWorkExperience(
+      UpdateWorkExperience event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      final success =
+          await _repository.updateWorkExperience(event.id, event.updates);
+      if (success) {
+        emit(ResumeOperationSuccess());
+      } else {
+        emit(ResumeOperationFailure('更新工作经历失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onUpdateWorkExperience(UpdateWorkExperience event, Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.updateWorkExperience(
-            event.id, event.workExperience.toJson());
-        if (success) {
-          final updatedWorkExperiences =
-              List<WorkExperience>.from(currentState.resume.workExperiences);
-          final index = updatedWorkExperiences
-              .indexWhere((exp) => exp.company == event.id); // 使用公司名称作为临时ID
-          if (index != -1) {
-            updatedWorkExperiences[index] = event.workExperience;
-          }
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: updatedWorkExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error updating work experience: $e'));
+  Future<void> _onDeleteWorkExperience(
+      DeleteWorkExperience event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 过滤掉要删除的工作经历
+      final updatedExperiences = resume.workExperiences
+          .where((exp) => exp.company != event.id)
+          .toList();
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(workExperiences: updatedExperiences);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('删除工作经历失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onDeleteWorkExperience(DeleteWorkExperience event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.deleteWorkExperience(event.id);
-        if (success) {
-          final updatedWorkExperiences =
-          List<WorkExperience>.from(currentState.resume.workExperiences)
-            ..removeWhere((exp) => exp.company == event.id); // 使用公司名称作为临时ID
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: updatedWorkExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error deleting work experience: $e'));
+  Future<void> _onUpdateSkills(
+      UpdateSkills event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(skills: event.skills);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('更新技能失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onAddProjectExperience(AddProjectExperience event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository
-            .addProjectExperience(event.projectExperience.toJson());
-        if (success) {
-          final updatedProjects =
-          List<ProjectExperience>.from(currentState.resume.projectExperiences)
-            ..add(event.projectExperience);
-          final updatedResume = currentState.resume.copyWith(
-              projectExperiences: updatedProjects, educationExperiences: []);
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error adding project experience: $e'));
+  Future<void> _onAddProjectExperience(
+      AddProjectExperience event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 添加新项目经历
+      final updatedProjects = List<ProjectExperience>.from(resume.projectExperiences)
+        ..add(event.projectExperience);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(projectExperiences: updatedProjects);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('添加项目经历失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onAddEducation(AddEducation event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.addEducation(
-            event.education.toJson());
-        if (success) {
-          final updatedEducations =
-          List<Education>.from(currentState.resume.educationExperiences)
-            ..add(event.education);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: updatedEducations,
-            honors: currentState.resume.honors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error adding education: $e'));
+  Future<void> _onAddEducation(
+      AddEducation event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 添加新教育经历
+      final updatedEducation = List<Education>.from(resume.educationExperiences)
+        ..add(event.education);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(educationExperiences: updatedEducation);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('添加教育经历失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onAddHonor(AddHonor event, Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.addHonor(event.honor);
-        if (success) {
-          final updatedHonors = List<String>.from(currentState.resume.honors)
-            ..add(event.honor);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: updatedHonors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error adding honor: $e'));
+  Future<void> _onAddHonor(
+      AddHonor event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 添加新荣誉
+      final updatedHonors = List<String>.from(resume.honors)..add(event.honor);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(honors: updatedHonors);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('添加荣誉失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onDeleteHonor(DeleteHonor event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.deleteHonor(event.honor);
-        if (success) {
-          final updatedHonors = List<String>.from(currentState.resume.honors)
-            ..remove(event.honor);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: updatedHonors,
-            certifications: currentState.resume.certifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error deleting honor: $e'));
+  Future<void> _onDeleteHonor(
+      DeleteHonor event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 删除荣誉
+      final updatedHonors = List<String>.from(resume.honors)
+        ..remove(event.honor);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(honors: updatedHonors);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('删除荣誉失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onAddCertification(AddCertification event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success = await _repository.addCertification(event.certification);
-        if (success) {
-          final updatedCertifications =
-          List<String>.from(currentState.resume.certifications)
-            ..add(event.certification);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: updatedCertifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error adding certification: $e'));
+  Future<void> _onAddCertification(
+      AddCertification event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 添加新证书
+      final updatedCertifications = List<String>.from(resume.certifications)
+        ..add(event.certification);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(certifications: updatedCertifications);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('添加证书失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 
-  Future<void> _onDeleteCertification(DeleteCertification event,
-      Emitter<ResumeState> emit) async {
-    if (state is ResumeLoaded) {
-      final currentState = state as ResumeLoaded;
-      try {
-        final success =
-        await _repository.deleteCertification(event.certification);
-        if (success) {
-          final updatedCertifications =
-          List<String>.from(currentState.resume.certifications)
-            ..remove(event.certification);
-          final updatedResume = ResumeModel(
-            name: currentState.resume.name,
-            phone: currentState.resume.phone,
-            email: currentState.resume.email,
-            address: currentState.resume.address,
-            jobStatus: currentState.resume.jobStatus,
-            strengths: currentState.resume.strengths,
-            expectations: currentState.resume.expectations,
-            workExperiences: currentState.resume.workExperiences,
-            projectExperiences: currentState.resume.projectExperiences,
-            educationExperiences: currentState.resume.educationExperiences,
-            honors: currentState.resume.honors,
-            certifications: updatedCertifications,
-            skills: currentState.resume.skills,
-            personality: currentState.resume.personality,
-          );
-          emit(ResumeLoaded(updatedResume));
-        }
-      } catch (e) {
-        emit(ResumeError('Error deleting certification: $e'));
+  Future<void> _onDeleteCertification(
+      DeleteCertification event, Emitter<ResumeState> emit) async {
+    emit(ResumeLoading());
+    try {
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 删除证书
+      final updatedCertifications = List<String>.from(resume.certifications)
+        ..remove(event.certification);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(certifications: updatedCertifications);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('删除证书失败'));
       }
+    } catch (e) {
+      emit(ResumeOperationFailure(e.toString()));
     }
   }
 }

@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<Job>> _loadMoreJobs(String? type, String? tag, int page) async {
     _cancelPreviousRequest();
     _cancelToken = CancelToken();
-    debugPrint('Loading jobs - Type: $type, Tag: $tag, Page: $page');
+
 
     try {
       final newJobs = await _jobRepository.fetchJobs(
@@ -95,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<Job>> _refreshJobs(String? type, String? tag) async {
-    debugPrint('Refreshing jobs - Type: $type, Tag: $tag');
     return await _loadMoreJobs(type, tag, 1);
   }
 

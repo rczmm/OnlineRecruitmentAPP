@@ -55,9 +55,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     _cancelPreviousRequest(); // Cancel any previous request before starting a new one
     _cancelToken = CancelToken();
 
-    // Use the passed 'page' argument directly
-    debugPrint('Loading jobs - Type: $type, Tag: $tag, Page: $page');
-
     try {
       final response = await dio.post(
         "job/list", // Ensure this endpoint is correct
@@ -116,28 +113,19 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       }
     } catch (e) {
       _cancelToken = null; // Clear token on error
-      debugPrint('Error loading page $page: $e');
       _showErrorDialog('发生意外错误：$e');
       return []; // Return empty list on failure
     }
   }
 
-  // --- Updated _refreshJobs ---
-  // This function is called by JobListView's RefreshIndicator
-  // It should fetch the *first* page of data.
   Future<List<Job>> _refreshJobs(String? type, String? tag) async {
-    // No need to manage state like _page or _allJobs here.
-    // Just call _loadMoreJobs with page = 1.
-    // Cancellation is handled within _loadMoreJobs.
-    debugPrint('Refreshing jobs - Type: $type, Tag: $tag');
-    return await _loadMoreJobs(type, tag, 1); // Always load page 1 on refresh
+    return await _loadMoreJobs(type, tag, 1);
   }
 
   // Method to cancel the previous request
   void _cancelPreviousRequest() {
     if (_cancelToken != null && !_cancelToken!.isCancelled) {
       _cancelToken!.cancel('New request started');
-      debugPrint('Previous request cancelled.');
     }
     _cancelToken = null; // Ensure token is nullified after cancellation attempt
   }

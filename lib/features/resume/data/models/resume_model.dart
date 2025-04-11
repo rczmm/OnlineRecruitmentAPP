@@ -4,6 +4,8 @@ import 'package:zhaopingapp/features/resume/data/models/work_experience_model.da
 import 'education_model.dart';
 
 class ResumeModel {
+  final String id;
+  final String userId;
   final String name;
   final String phone;
   final String email;
@@ -20,6 +22,8 @@ class ResumeModel {
   final String personality;
 
   ResumeModel({
+    required this.id,
+    required this.userId,
     required this.name,
     required this.phone,
     required this.email,
@@ -38,6 +42,8 @@ class ResumeModel {
 
   factory ResumeModel.fromJson(Map<String, dynamic> json) {
     return ResumeModel(
+      id: json['id'] ?? '',
+      userId: json['userId'] ?? '',
       name: json['name'] ?? '',
       phone: json['phone'] ?? '',
       email: json['email'] ?? '',
@@ -46,14 +52,17 @@ class ResumeModel {
       strengths: json['strengths'] ?? '',
       expectations: json['expectations'] ?? '',
       workExperiences: (json['workExperiences'] as List?)
-          ?.map((e) => WorkExperience.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => WorkExperience.fromMap(e))
+              .toList() ??
+          [],
       projectExperiences: (json['projectExperiences'] as List?)
-          ?.map((e) => ProjectExperience.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => ProjectExperience.fromMap(e))
+              .toList() ??
+          [],
       educationExperiences: (json['educationExperiences'] as List?)
-          ?.map((e) => Education.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => Education.fromMap(e))
+              .toList() ??
+          [],
       honors: List<String>.from(json['honors'] ?? []),
       certifications: List<String>.from(json['certifications'] ?? []),
       skills: List<String>.from(json['skills'] ?? []),
@@ -63,6 +72,8 @@ class ResumeModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'userId': userId,
       'name': name,
       'phone': phone,
       'email': email,
@@ -70,9 +81,10 @@ class ResumeModel {
       'jobStatus': jobStatus,
       'strengths': strengths,
       'expectations': expectations,
-      'workExperiences': workExperiences.map((e) => e.toJson()).toList(),
-      'projectExperiences': projectExperiences.map((e) => e.toJson()).toList(),
-      'educationExperiences': educationExperiences.map((e) => e.toJson()).toList(),
+      'workExperiences': workExperiences.map((e) => e.toMap()).toList(),
+      'projectExperiences': projectExperiences.map((e) => e.toMap()).toList(),
+      'educationExperiences':
+          educationExperiences.map((e) => e.toMap()).toList(),
       'honors': honors,
       'certifications': certifications,
       'skills': skills,
@@ -80,9 +92,50 @@ class ResumeModel {
     };
   }
 
+  // 创建一个新的ResumeModel实例，可以选择性地更新某些字段
+  ResumeModel copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    String? phone,
+    String? email,
+    String? address,
+    String? jobStatus,
+    String? strengths,
+    String? expectations,
+    List<WorkExperience>? workExperiences,
+    List<ProjectExperience>? projectExperiences,
+    List<Education>? educationExperiences,
+    List<String>? honors,
+    List<String>? certifications,
+    List<String>? skills,
+    String? personality,
+  }) {
+    return ResumeModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      address: address ?? this.address,
+      jobStatus: jobStatus ?? this.jobStatus,
+      strengths: strengths ?? this.strengths,
+      expectations: expectations ?? this.expectations,
+      workExperiences: workExperiences ?? this.workExperiences,
+      projectExperiences: projectExperiences ?? this.projectExperiences,
+      educationExperiences: educationExperiences ?? this.educationExperiences,
+      honors: honors ?? this.honors,
+      certifications: certifications ?? this.certifications,
+      skills: skills ?? this.skills,
+      personality: personality ?? this.personality,
+    );
+  }
+
   // Mock data for testing
   static ResumeModel getMockData() {
     return ResumeModel(
+      id: "",
+      userId: "",
       name: '张三',
       phone: '13800138000',
       email: 'zhangsan@example.com',
@@ -123,5 +176,4 @@ class ResumeModel {
     );
   }
 
-  copyWith({required List<Education> educationExperiences, required List<ProjectExperience> projectExperiences}) {}
 }

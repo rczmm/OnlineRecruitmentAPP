@@ -28,9 +28,9 @@ class AddWorkExperience extends ResumeEvent {
 
 class UpdateWorkExperience extends ResumeEvent {
   final String id;
-  final WorkExperience workExperience;
+  final Map<String, dynamic> updates;
 
-  UpdateWorkExperience(this.id, this.workExperience);
+  UpdateWorkExperience(this.id, this.updates);
 }
 
 class DeleteWorkExperience extends ResumeEvent {

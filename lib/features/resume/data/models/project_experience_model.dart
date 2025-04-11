@@ -11,7 +11,7 @@ class ProjectExperience {
     required this.description,
   });
 
-  factory ProjectExperience.fromJson(Map<String, dynamic> json) {
+  factory ProjectExperience.fromMap(Map<String, dynamic> json) {
     return ProjectExperience(
       name: json['name'] ?? '',
       startDate: json['startDate'] ?? '',
@@ -20,7 +20,7 @@ class ProjectExperience {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       'name': name,
       'startDate': startDate,

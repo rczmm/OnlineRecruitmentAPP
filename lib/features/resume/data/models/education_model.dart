@@ -13,7 +13,7 @@ class Education {
     required this.endDate,
   });
 
-  factory Education.fromJson(Map<String, dynamic> json) {
+  factory Education.fromMap(Map<String, dynamic> json) {
     return Education(
       school: json['school'] ?? '',
       major: json['major'] ?? '',
@@ -23,7 +23,7 @@ class Education {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       'school': school,
       'major': major,

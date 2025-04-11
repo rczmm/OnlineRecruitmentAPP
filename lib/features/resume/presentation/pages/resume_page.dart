@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zhaopingapp/core/services/AuthService.dart';
 import '../../data/models/resume_model.dart';
 import '../../data/models/work_experience_model.dart';
 import '../../data/models/project_experience_model.dart';
@@ -73,10 +74,17 @@ class _ResumePageState extends State<ResumePage> {
     });
   }
 
-  void _saveResume() {
+  Future<void> _saveResume() async {
+    debugPrint('_saveResume 方法被调用');
     final currentState = _resumeBloc.state;
+
+    String userId = await AuthService().getCurrentUserId() ?? '0';
+
     if (currentState is ResumeLoaded) {
+      debugPrint('创建更新后的简历模型');
       final updatedResume = ResumeModel(
+        id: currentState.resume.id,
+        userId: userId,
         name: _nameController.text,
         phone: _phoneController.text,
         email: _emailController.text,
@@ -92,6 +100,7 @@ class _ResumePageState extends State<ResumePage> {
         skills: currentState.resume.skills,
         personality: _personalityController.text,
       );
+      debugPrint(updatedResume.name);
       _resumeBloc.add(UpdateResume(updatedResume));
     }
   }
@@ -232,11 +241,18 @@ class _ResumePageState extends State<ResumePage> {
                         actions: [
                           TextButton(
                             // Use dialogContext to pop the dialog
-                            onPressed: () => Navigator.pop(dialogContext),
+                            onPressed: () {
+                              // 先移除焦点，避免指针绑定错误
+                              FocusScope.of(dialogContext).unfocus();
+                              Navigator.pop(dialogContext);
+                            },
                             child: const Text('取消'),
                           ),
                           TextButton(
                             onPressed: () {
+                              // 先移除焦点，避免指针绑定错误
+                              FocusScope.of(dialogContext).unfocus();
+
                               // Basic validation
                               if (company.isNotEmpty && position.isNotEmpty) {
                                 final newExperience = WorkExperience(
@@ -246,13 +262,15 @@ class _ResumePageState extends State<ResumePage> {
                                   endDate: endDate,
                                   description: description,
                                 );
-                                // Add event to BLoC
-                                _resumeBloc
-                                    .add(AddWorkExperience(newExperience));
-                                // No need to clear variables here as they are local
-                                // to this dialog instance and will be discarded.
-                                Navigator.pop(
-                                    dialogContext); // Close the dialog
+
+                                // 使用Future.delayed确保在对话框关闭后再添加事件
+                                Future.delayed(Duration.zero, () {
+                                  _resumeBloc
+                                      .add(AddWorkExperience(newExperience));
+                                });
+
+                                // 关闭对话框
+                                Navigator.pop(dialogContext);
                               } else {
                                 // Optional: Show an error message if fields are empty
                                 ScaffoldMessenger.of(stfContext).showSnackBar(
@@ -288,8 +306,8 @@ class _ResumePageState extends State<ResumePage> {
                                 child: const Text('取消')),
                             TextButton(
                                 onPressed: () {
-                                  _resumeBloc.add(DeleteWorkExperience(exp
-                                      .company));
+                                  _resumeBloc
+                                      .add(DeleteWorkExperience(exp.company));
                                   Navigator.of(ctx).pop();
                                 },
                                 child: const Text('删除',
@@ -396,11 +414,18 @@ class _ResumePageState extends State<ResumePage> {
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              // 先移除焦点，避免指针绑定错误
+                              FocusScope.of(context).unfocus();
+                              Navigator.pop(context);
+                            },
                             child: const Text('取消'),
                           ),
                           TextButton(
                             onPressed: () {
+                              // 先移除焦点，避免指针绑定错误
+                              FocusScope.of(context).unfocus();
+
                               if (name.isNotEmpty) {
                                 final newProject = ProjectExperience(
                                   name: name,
@@ -408,13 +433,14 @@ class _ResumePageState extends State<ResumePage> {
                                   endDate: endDate,
                                   description: description,
                                 );
-                                _resumeBloc
-                                    .add(AddProjectExperience(newProject));
-                                // Clear form fields
-                                name = '';
-                                startDate = '';
-                                endDate = '';
-                                description = '';
+
+                                // 使用Future.delayed确保在对话框关闭后再添加事件
+                                Future.delayed(Duration.zero, () {
+                                  _resumeBloc
+                                      .add(AddProjectExperience(newProject));
+                                });
+
+                                // 关闭对话框
                                 Navigator.pop(context);
                               } else {
                                 ScaffoldMessenger.of(stfContext).showSnackBar(
@@ -511,11 +537,18 @@ class _ResumePageState extends State<ResumePage> {
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            // 先移除焦点，避免指针绑定错误
+                            FocusScope.of(context).unfocus();
+                            Navigator.pop(context);
+                          },
                           child: const Text('取消'),
                         ),
                         TextButton(
                           onPressed: () {
+                            // 先移除焦点，避免指针绑定错误
+                            FocusScope.of(context).unfocus();
+
                             if (school.isNotEmpty && major.isNotEmpty) {
                               final newEducation = Education(
                                 school: school,
@@ -524,13 +557,13 @@ class _ResumePageState extends State<ResumePage> {
                                 startDate: startDate,
                                 endDate: endDate,
                               );
-                              _resumeBloc.add(AddEducation(newEducation));
-                              // Clear form fields
-                              school = '';
-                              major = '';
-                              degree = '';
-                              startDate = '';
-                              endDate = '';
+
+                              // 使用Future.delayed确保在对话框关闭后再添加事件
+                              Future.delayed(Duration.zero, () {
+                                _resumeBloc.add(AddEducation(newEducation));
+                              });
+
+                              // 关闭对话框
                               Navigator.pop(context);
                             }
                           },
@@ -578,7 +611,7 @@ class _ResumePageState extends State<ResumePage> {
               child: ElevatedButton(
                 onPressed: () {
                   String honor = '';
-                  
+
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -587,13 +620,18 @@ class _ResumePageState extends State<ResumePage> {
                         decoration: const InputDecoration(
                           labelText: '荣誉名称',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         onChanged: (value) => honor = value,
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            // 先移除焦点，避免指针绑定错误
+                            FocusScope.of(context).unfocus();
+                            Navigator.pop(context);
+                          },
                           child: const Text('取消'),
                         ),
                         TextButton(
@@ -619,27 +657,25 @@ class _ResumePageState extends State<ResumePage> {
                 },
                 onDelete: () {
                   showDialog(
-                    context: context,
-                    builder: (BuildContext ctx) {
-                      return AlertDialog(
-                        title: const Text('请确认'),
-                        content: Text('确定要删除 "$honor" 吗？'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('取消')
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _resumeBloc.add(DeleteHonor(honor));
-                              Navigator.of(ctx).pop();
-                            },
-                            child: const Text('删除', style: TextStyle(color: Colors.red))
-                          )
-                        ],
-                      );
-                    }
-                  );
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                          title: const Text('请确认'),
+                          content: Text('确定要删除 "$honor" 吗？'),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(),
+                                child: const Text('取消')),
+                            TextButton(
+                                onPressed: () {
+                                  _resumeBloc.add(DeleteHonor(honor));
+                                  Navigator.of(ctx).pop();
+                                },
+                                child: const Text('删除',
+                                    style: TextStyle(color: Colors.red)))
+                          ],
+                        );
+                      });
                 },
                 child: Text(honor),
               )),
@@ -660,7 +696,7 @@ class _ResumePageState extends State<ResumePage> {
               child: ElevatedButton(
                 onPressed: () {
                   String certification = '';
-                  
+
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -669,13 +705,18 @@ class _ResumePageState extends State<ResumePage> {
                         decoration: const InputDecoration(
                           labelText: '证书名称',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         onChanged: (value) => certification = value,
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            // 先移除焦点，避免指针绑定错误
+                            FocusScope.of(context).unfocus();
+                            Navigator.pop(context);
+                          },
                           child: const Text('取消'),
                         ),
                         TextButton(
@@ -701,27 +742,25 @@ class _ResumePageState extends State<ResumePage> {
                 },
                 onDelete: () {
                   showDialog(
-                    context: context,
-                    builder: (BuildContext ctx) {
-                      return AlertDialog(
-                        title: const Text('请确认'),
-                        content: Text('确定要删除 "$cert" 吗？'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('取消')
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _resumeBloc.add(DeleteCertification(cert));
-                              Navigator.of(ctx).pop();
-                            },
-                            child: const Text('删除', style: TextStyle(color: Colors.red))
-                          )
-                        ],
-                      );
-                    }
-                  );
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                          title: const Text('请确认'),
+                          content: Text('确定要删除 "$cert" 吗？'),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(),
+                                child: const Text('取消')),
+                            TextButton(
+                                onPressed: () {
+                                  _resumeBloc.add(DeleteCertification(cert));
+                                  Navigator.of(ctx).pop();
+                                },
+                                child: const Text('删除',
+                                    style: TextStyle(color: Colors.red)))
+                          ],
+                        );
+                      });
                 },
                 child: Text(cert),
               )),
@@ -812,14 +851,28 @@ class _ResumePageState extends State<ResumePage> {
       body: BlocConsumer<ResumeBloc, ResumeState>(
         bloc: _resumeBloc,
         listener: (context, state) {
+          debugPrint('BlocConsumer listener: $state');
           if (state is ResumeError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
+          } else if (state is ResumeSaving) {
+            debugPrint('正在保存简历...');
+          } else if (state is ResumeLoaded) {
+            debugPrint('简历已加载/更新');
+            if (_isEditing) {
+              // 如果是从编辑状态加载的，说明保存成功，退出编辑模式
+              setState(() {
+                _isEditing = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('简历已保存')),
+              );
+            }
           }
         },
         builder: (context, state) {
-          if (state is ResumeLoading) {
+          if (state is ResumeLoading || state is ResumeSaving) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is ResumeLoaded) {

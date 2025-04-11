@@ -68,7 +68,7 @@ class ApiResumeModel {
       if (workExperience.isNotEmpty) {
         final List<dynamic> workExpJson = json.decode(workExperience);
         workExperiencesList = workExpJson
-            .map((item) => WorkExperience.fromJson(item))
+            .map((item) => WorkExperience.fromMap(item))
             .toList();
       }
     } catch (e) {
@@ -81,7 +81,7 @@ class ApiResumeModel {
       if (projectExperience.isNotEmpty) {
         final List<dynamic> projectExpJson = json.decode(projectExperience);
         projectExperiencesList = projectExpJson
-            .map((item) => ProjectExperience.fromJson(item))
+            .map((item) => ProjectExperience.fromMap(item))
             .toList();
       }
     } catch (e) {
@@ -94,7 +94,7 @@ class ApiResumeModel {
       if (educationHistory.isNotEmpty) {
         final List<dynamic> educationJson = json.decode(educationHistory);
         educationList = educationJson
-            .map((item) => Education.fromJson(item))
+            .map((item) => Education.fromMap(item))
             .toList();
       }
     } catch (e) {
@@ -121,6 +121,8 @@ class ApiResumeModel {
     }
 
     return ResumeModel(
+      id: " ",
+      userId: " ",
       name: name,
       phone: phone,
       email: email,

@@ -67,4 +67,8 @@ class ResumeService {
   Future<Response> updateCertifications(List<String> certifications) async {
     return await _dio.put('/resume/certifications', data: {'certifications': certifications});
   }
+
+  Future<Response> saveResume(Map<String, dynamic> resumeData) async {
+    return await _dio.post('/resume/save', data: resumeData);
+  }
 }

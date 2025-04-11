@@ -19,3 +19,11 @@ class ResumeError extends ResumeState {
 
   ResumeError(this.message);
 }
+
+class ResumeOperationSuccess extends ResumeState {}
+
+class ResumeOperationFailure extends ResumeState {
+  final String message;
+
+  ResumeOperationFailure(this.message);
+}
