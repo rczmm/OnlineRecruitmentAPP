@@ -25,7 +25,6 @@ class _ResumePageState extends State<ResumePage> {
   late ResumeBloc _resumeBloc;
   final _formKey = GlobalKey<FormState>();
 
-  // TextEditingControllers for basic info
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
@@ -82,43 +81,65 @@ class _ResumePageState extends State<ResumePage> {
     super.dispose();
   }
 
-  void _toggleEdit() {
-    setState(() {
-      _isEditing = !_isEditing;
-      if (!_isEditing && _formKey.currentState?.validate() == true) {
-        _saveResume();
+  Future<void> _toggleEdit() async {
+    if (_isEditing) {
+      if (_formKey.currentState?.validate() == true) {
+        final currentState = _resumeBloc.state;
+        if (currentState is ResumeLoaded) {
+          final name = _nameController.text;
+          final phone = _phoneController.text;
+          final email = _emailController.text;
+          final address = _addressController.text;
+          final jobStatus = _jobStatusController.text;
+          final strengths = _strengthsController.text;
+          final expectations = _expectationsController.text;
+          final personality = _personalityController.text;
+
+          String userId = await AuthService().getCurrentUserId() ?? '0';
+
+          final updatedResume = ResumeModel(
+            id: currentState.resume.id,
+            userId: userId,
+            name: name,
+            phone: phone,
+            email: email,
+            address: address,
+            jobStatus: jobStatus,
+            strengths: strengths,
+            expectations: expectations,
+            personality: personality,
+            workExperiences: currentState.resume.workExperiences,
+            projectExperiences: currentState.resume.projectExperiences,
+            educationExperiences: currentState.resume.educationExperiences,
+            honors: currentState.resume.honors,
+            certifications: currentState.resume.certifications,
+            skills: currentState.resume.skills,
+          );
+
+          setState(() {
+            _isEditing = false;
+          });
+
+          debugPrint(
+              'Dispatching UpdateResume with name: ${updatedResume.name}');
+          _resumeBloc.add(UpdateResume(updatedResume));
+        } else {
+          setState(() {
+            _isEditing = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('无法保存：简历状态异常')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请修正错误后保存')),
+        );
       }
-    });
-  }
-
-  Future<void> _saveResume() async {
-    debugPrint('_saveResume 方法被调用');
-    final currentState = _resumeBloc.state;
-
-    String userId = await AuthService().getCurrentUserId() ?? '0';
-
-    if (currentState is ResumeLoaded) {
-      debugPrint('创建更新后的简历模型');
-      final updatedResume = ResumeModel(
-        id: currentState.resume.id,
-        userId: userId,
-        name: _nameController.text,
-        phone: _phoneController.text,
-        email: _emailController.text,
-        address: _addressController.text,
-        jobStatus: _jobStatusController.text,
-        strengths: _strengthsController.text,
-        expectations: _expectationsController.text,
-        workExperiences: currentState.resume.workExperiences,
-        projectExperiences: currentState.resume.projectExperiences,
-        educationExperiences: currentState.resume.educationExperiences,
-        honors: currentState.resume.honors,
-        certifications: currentState.resume.certifications,
-        skills: currentState.resume.skills,
-        personality: _personalityController.text,
-      );
-      debugPrint(updatedResume.name);
-      _resumeBloc.add(UpdateResume(updatedResume));
+    } else {
+      setState(() {
+        _isEditing = true;
+      });
     }
   }
 

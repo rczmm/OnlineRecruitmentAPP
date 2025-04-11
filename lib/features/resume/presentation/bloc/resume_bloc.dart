@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zhaopingapp/features/resume/data/models/work_experience_model.dart';
 import 'package:zhaopingapp/features/resume/data/repositories/resume_repository.dart';
 import 'package:zhaopingapp/features/resume/data/models/project_experience_model.dart';
 import 'package:zhaopingapp/features/resume/data/models/education_model.dart';
@@ -61,8 +62,20 @@ class ResumeBloc extends Bloc<ResumeEvent, ResumeState> {
       AddWorkExperience event, Emitter<ResumeState> emit) async {
     emit(ResumeLoading());
     try {
-      await _repository.addWorkExperience(event.workExperience.toMap());
-      emit(ResumeOperationSuccess());
+      // 获取当前简历
+      final resume = await _repository.getResume();
+      // 添加新工作经历
+      final updatedProjects = List<WorkExperience>.from(resume.workExperiences)
+        ..add(event.workExperience);
+      // 创建更新后的简历
+      final updatedResume = resume.copyWith(workExperiences: updatedProjects);
+      // 保存更新后的简历
+      final success = await _repository.saveResume(updatedResume);
+      if (success) {
+        emit(ResumeLoaded(updatedResume));
+      } else {
+        emit(ResumeOperationFailure('添加工作经历失败'));
+      }
     } catch (e) {
       emit(ResumeOperationFailure(e.toString()));
     }
