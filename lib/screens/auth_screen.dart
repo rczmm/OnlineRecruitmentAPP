@@ -75,7 +75,7 @@ class _AuthScreenState extends State<AuthScreen> {
         data: {
           'username': username,
           'password': password,
-          'userType': 0,
+          'userType': 1, // 写死，从客户端登录的默认就是求职者
         },
         options: Options(contentType: 'application/json'),
       );
