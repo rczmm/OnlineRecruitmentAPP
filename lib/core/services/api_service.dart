@@ -221,7 +221,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> fetchUserProfile() async {
-    final url = '/user/profile';
+    const url = '/user/profile';
 
     debugPrint("Fetching user profile from $url...");
     try {
@@ -250,6 +250,40 @@ class ApiService {
     } catch (e) {
       debugPrint("Unexpected error fetching profile: $e");
       throw Exception("加载用户信息时发生未知错误");
+    }
+  }
+
+  /// 接受面试邀请
+  Future<bool> acceptInterviewInvitation({
+    required String interviewId,
+    required String senderId,
+  }) async {
+    const url = '/interview/accept';
+
+    debugPrint(
+        "Accepting interview invitation: $interviewId from sender: $senderId");
+    try {
+      final options = await _getAuthOptions();
+      final response = await _dio.post(
+        url,
+        queryParameters: {'id': interviewId},
+        options: options,
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        debugPrint(
+            "Failed to accept interview, status: ${response.statusCode}, data: ${response.data}");
+        throw Exception("无法接受面试邀请 (错误码: ${response.statusCode})");
+      }
+    } on DioException catch (e) {
+      debugPrint("DioError accepting interview: ${e.message}");
+      debugPrint("DioError response: ${e.response?.data}");
+      throw Exception("接受面试邀请失败: ${e.message ?? '网络请求错误'}");
+    } catch (e) {
+      debugPrint("Unexpected error accepting interview: $e");
+      throw Exception("接受面试邀请时发生未知错误");
     }
   }
 }

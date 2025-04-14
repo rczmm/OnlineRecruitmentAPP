@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -12,6 +14,8 @@ class ChatMessageModel {
   final bool isFile;
   final String? fileName;
   final String? fileUrl;
+  final String? type;
+  final Map<String, dynamic>? interviewData;
 
   ChatMessageModel({
     required this.id,
@@ -24,6 +28,8 @@ class ChatMessageModel {
     this.isFile = false,
     this.fileName,
     this.fileUrl,
+    this.type,
+    this.interviewData,
   });
 
   factory ChatMessageModel.fromJson(
@@ -52,6 +58,19 @@ class ChatMessageModel {
       timestamp = DateTime.now(); // Fallback if timestamp is missing
     }
 
+    // 检查消息类型
+    final String? messageType = json['type']?.toString();
+    Map<String, dynamic>? interviewData;
+    
+    // 如果是面试邀请，解析面试数据
+    if (messageType == 'INTERVIEW_INVITATION' && json['text'] != null) {
+      try {
+        interviewData = jsonDecode(json['text'].toString());
+      } catch (e) {
+        debugPrint('Error parsing interview data: $e');
+      }
+    }
+    
     return ChatMessageModel(
       id: json['id']?.toString() ?? UniqueKey().toString(),
       senderId: senderId,
@@ -60,9 +79,11 @@ class ChatMessageModel {
       timestamp: timestamp,
       isMe: isMe,
       avatarUrl: isMe ? myAvatar : peerAvatar,
-      isFile: json['type'] == 'file',
+      isFile: messageType == 'file',
       fileName: json['fileName']?.toString(),
       fileUrl: json['fileUrl']?.toString(),
+      type: messageType,
+      interviewData: interviewData,
     );
   }
 }
