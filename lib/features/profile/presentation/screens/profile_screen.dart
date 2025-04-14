@@ -15,7 +15,7 @@ import 'package:zhaopingapp/screens/application_history_screen.dart';
 import 'package:zhaopingapp/screens/collect_screen.dart';
 import 'package:zhaopingapp/widgets/StatusCounter.dart';
 
-// Convert to StatefulWidget
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -24,32 +24,30 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Add state variables
   final _storage = const FlutterSecureStorage();
   final ApiService _apiService = ApiService();
 
   bool _isLoading = true;
   bool _isLoggedIn = false;
-  Map<String, dynamic>? _userData; // To store user data like name, avatar
+  Map<String, dynamic>? _userData;
 
   @override
   void initState() {
     super.initState();
-    _checkAuthAndLoadData(); // Check auth status on init
+    _checkAuthAndLoadData();
   }
 
   Future<void> _checkAuthAndLoadData() async {
-    if (!mounted) return; // Ensure widget is still mounted
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
     String? token;
     try {
       token =
-          await _storage.read(key: 'authToken'); // Use your actual storage key
+          await _storage.read(key: 'authToken');
 
       if (token != null && token.isNotEmpty) {
-        // Token exists, try fetching profile
         try {
           final userData = await _apiService.fetchUserProfile();
           if (mounted) {
