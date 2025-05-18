@@ -71,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       final response = await _dio.post(
-        'http://192.168.1.39:8088/auth/login',
+        'http://127.0.0.1:8088/auth/login',
         data: {
           'username': username,
           'password': password,
@@ -208,13 +208,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(
-                      'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200'),
+                      'https://logo.com/image-cdn/images/kts928pd/production/5f4f0c90d60931ba876fad50c4533c3ec5602a91-7575x2115.webp?w=1920&q=70&fm=webp'),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
                 controller: _usernameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '用户名',
                   border: OutlineInputBorder(),
                 ),

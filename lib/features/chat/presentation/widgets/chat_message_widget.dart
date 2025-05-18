@@ -109,10 +109,10 @@ class ChatMessageWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 children: [
                   Icon(Icons.event_available, color: Colors.blue, size: 20),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     '面试邀请',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
