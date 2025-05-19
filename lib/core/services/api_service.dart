@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart' show PlatformFile;
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:zhaopingapp/core/models/file_upload_response.dart';
 import 'package:zhaopingapp/core/network/dio_client.dart';
 import 'package:zhaopingapp/features/chat/data/models/chat_message_model.dart';
-import 'package:zhaopingapp/core/utils/file_picker_web.dart';
 
 class ApiService {
   final Dio _dio = DioClient().dio;

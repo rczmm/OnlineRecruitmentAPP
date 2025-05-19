@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:zhaopingapp/core/models/file_upload_response.dart';
-import 'package:zhaopingapp/core/utils/file_picker_web.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:zhaopingapp/core/services/api_service_platform.dart';
 import 'package:zhaopingapp/core/permissions/storage_permission.dart';
